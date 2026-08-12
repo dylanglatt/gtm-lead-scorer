@@ -307,9 +307,15 @@ def _ctx(**kw):
     base['calibrate_url']=url_for('calibrate', token=tok) if tok else url_for('calibrate')
     return base
 
+# A representative example lead so the landing form is GENUINELY pre-filled — the visible
+# values are the values that get submitted, so clicking Score on load returns a real result
+# instead of "0 of 5 fields usable". Keyed by form param. A rep can edit or Reset from here.
+EXAMPLE_LEAD={'channel':'google','icp':'High Value','revenue':'$1,000,000 to $4,999,999',
+              'utm':'brand','legacy':'70','state':'TX','tz':'Eastern'}
+
 @app.route('/')
 def home():
-    return render_template('score.html', **_ctx())
+    return render_template('score.html', **_ctx(one=dict(EXAMPLE_LEAD)))
 
 @app.route('/score')
 def score():

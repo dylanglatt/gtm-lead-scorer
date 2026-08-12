@@ -1,7 +1,13 @@
 # GTM Lead Scorer
 
-A small web tool that scores an inbound sales lead from its intake data and tells a rep
-**who to work, how hard, and why**. Paste one lead, or upload a CSV of leads to rank a whole list.
+A lead-scoring and routing system that turns raw inbound-lead data into a ranked, explainable
+action queue for sales reps: **who to work, how hard, and why**. Score one lead, or upload a
+CSV to prioritize a whole list.
+
+![The rep's ranked lead queue](docs/board.png)
+
+*Upload a list and every lead is scored, tiered, and ordered by win-propensity, each with a
+specific next action. Messy rows are flagged and still ranked, never dropped.*
 
 ## Background
 
@@ -9,6 +15,26 @@ Built to solve a real go-to-market problem: scoring and triaging inbound leads f
 sales team so reps know who to work first. The original dataset is confidential, so this
 public version runs entirely on synthetic data generated to match its exact format. The
 model, the tool, and the approach are the real ones; only the underlying data is a stand-in.
+
+## Impact
+
+The system is built to move revenue by fixing how rep time gets allocated. Instead of leads
+getting attention in roughly the order they arrive, reps work a queue ordered by
+win-propensity, so the highest-probability leads are called first and the lowest get a lighter
+touch or inbound-only. Concretely, it:
+
+- ranks every inbound lead and assigns a tier and a specific next action, so a rep opens the
+  list and knows exactly who to call, how hard, and why;
+- lets a manager set the tier cutoffs to match team capacity, turning "who do we have time
+  for" into a deliberate, adjustable decision rather than an accident of volume;
+- stays reliable on the messy CRM exports reps actually paste in — bad rows are flagged and
+  still ranked, never dropped or silently mis-scored — so the queue stays trustworthy.
+
+This was built as a case study on a real GTM problem and validated on synthetic data (see
+Background), so it is not a production deployment with live usage or revenue figures. The
+contribution is the working system and the decisions behind it: what to predict, how to make
+the score explainable enough that a rep will actually act on it, and how to keep it robust on
+real-world input.
 
 ## Run it
 
@@ -19,7 +45,8 @@ python3 app.py
 ```
 
 The fitted model ships in the repo (`model.joblib`), so it runs offline on a fresh clone.
-If port 5000 is taken (macOS AirPlay uses it), run `PORT=8000 python3 app.py`.
+If port 5000 is taken (macOS AirPlay uses it), run `PORT=8000 python3 app.py`. The form loads
+pre-filled with an example lead, so you can click **Score** immediately or edit it first.
 
 ## What it does
 
@@ -31,6 +58,11 @@ If port 5000 is taken (macOS AirPlay uses it), run `PORT=8000 python3 app.py`.
 - **Confidence** — High / Medium / Low, with a flag for every missing or unrecognized field.
 - **Messy input is safe** — bad rows are flagged and ranked low, never crash the tool or sneak
   to the top. Try `leads_messy_fixture.csv` (broken ~19 different ways) under **List → Rank**.
+
+![One lead, scored and explained](docs/verdict.png)
+
+*Scoring a single lead: the win-propensity, the tier and next action, a confidence level, and a
+plain-English "why" built from each trait's historical close rate.*
 
 ## Files
 

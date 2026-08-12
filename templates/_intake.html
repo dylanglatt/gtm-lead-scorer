@@ -29,7 +29,7 @@
                 <input type="hidden" name="{{f.param}}" value="{{_v}}">
                 <button type="button" class="cbx-btn" aria-haspopup="listbox"
                         aria-expanded="false" aria-label="{{f.label}}">
-                  <span class="cbx-txt{% if not _l %} ph{% endif %}">{{ _l or f.eg }}</span>
+                  <span class="cbx-txt{% if not _l %} ph{% endif %}">{{ _l or 'Choose…' }}</span>
                   <span class="cbx-car"></span>
                 </button>
               </div>
