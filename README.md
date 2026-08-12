@@ -3,6 +3,13 @@
 A small web tool that scores an inbound sales lead from its intake data and tells a rep
 **who to work, how hard, and why**. Paste one lead, or upload a CSV of leads to rank a whole list.
 
+## Background
+
+Built to solve a real go-to-market problem: scoring and triaging inbound leads for a B2B
+sales team so reps know who to work first. The original dataset is confidential, so this
+public version runs entirely on synthetic data generated to match its exact format. The
+model, the tool, and the approach are the real ones; only the underlying data is a stand-in.
+
 ## Run it
 
 ```
@@ -32,5 +39,3 @@ If port 5000 is taken (macOS AirPlay uses it), run `PORT=8000 python3 app.py`.
 - `csv_io.py` / `flags.py` / `format.py` — CSV ingest, bad-value flagging, formatting
 - `templates/` — the UI
 - `model.joblib`, `meta.json` — the fitted model and its metadata
-
-_Trained on synthetic data; no real customer data is included._
