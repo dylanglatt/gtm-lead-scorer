@@ -1,0 +1,62 @@
+{% extends 'base.html' %}{% block content %}
+  {# 2 — Manager · Calibration. Drag-only, volume-based, whole numbers. The bar is the
+       only control; the numbers under it are readouts, not inputs. #}
+  <div class="card">
+    <div class="cal-hd">
+      <div>
+        <h1>Manager · Calibration</h1>
+        <p>Set tier cutoffs for the whole team based on how many leads you can work.
+           Reps never see this.</p>
+        <span class="rolechip">In production: role-gated to RevOps / managers</span>
+      </div>
+      <a class="btn ghost back" href="{{cal.back_url}}">‹ Back to leads</a>
+    </div>
+
+    {% if cal.total %}
+    <form class="cal-bd" method="post" action="{{cal.apply_url}}" id="calform">
+      <h2>Set tiers by how many leads you can work</h2>
+      <p class="lede">Drag a boundary. Counts update as you drag; nothing changes for reps
+        until you apply. Board: <span class="num">{{cal.total}}</span> scored leads{%
+        if cal.errors %} (<span class="num">{{cal.errors}}</span> unscorable, not tiered){% endif %}.</p>
+
+      <div class="bar" id="bar">
+        {% for v in cal.volumes %}<div class="seg {{v.key}}" id="seg-{{v.key}}"
+             style="left:{{v.floor}}%;width:{{v.width}}%">{{v.name}}</div>{% endfor %}
+        {% for k in cut_keys %}
+          <button type="button" class="handle" id="h-{{k}}" data-key="{{k}}"
+                  style="left:{{cut_pct[k]}}%"
+                  aria-label="{{ tier_name(k) }} cutoff, drag or use arrow keys"></button>
+        {% endfor %}
+      </div>
+
+      <div class="vols">
+        {% for v in cal.volumes %}
+          <div class="vol" id="vol-{{v.key}}">
+            <div class="vt"><span class="pill {{v.key}}">{{v.name}}</span></div>
+            <div class="vn num" id="vn-{{v.key}}">{{v.count}}</div>
+            <div class="vm" id="vm-{{v.key}}">top <span class="num">{{v.pct}}</span>% ·
+              score ≥ <span class="num">{{v.floor}}</span></div>
+          </div>
+        {% endfor %}
+      </div>
+
+      {% for k in cut_keys %}<input type="hidden" name="c_{{k}}" id="c_{{k}}" value="{{cut_pct[k]}}">{% endfor %}
+      <div class="cal-foot">
+        <button class="btn" type="submit" id="applybtn" disabled>Apply to board</button>
+        <span class="status{% if cal.applied %} done{% endif %}" id="calstatus">
+          {%- if cal.applied %}Applied: {% for v in cal.volumes %}{{v.name}}
+            <span class="num">{{v.count}}</span>{% if not loop.last %} · {% endif %}{% endfor %}
+          {%- else %}Preview. Apply to update{% endif %}</span>
+      </div>
+      <p class="cal-note">Cutoffs are whole numbers out of 100. Applying re-tiers the
+        existing board. No lead is re-scored.</p>
+    </form>
+    {% else %}
+      <div class="cal-bd">
+        <p class="empty">No ranked list to calibrate against. Upload a CSV from
+          <a href="{{url_for('home')}}">Lead intake</a> first. The cutoffs are set by lead
+          volume, so calibration needs a board to count.</p>
+      </div>
+    {% endif %}
+  </div>
+{% endblock %}

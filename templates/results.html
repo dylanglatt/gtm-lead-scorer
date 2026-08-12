@@ -1,0 +1,123 @@
+{% extends 'base.html' %}{% block content %}
+{% if qv %}
+  <div class="card">
+    <div class="card-hd"><h2><span class="num">{{qv.total}}</span> leads, ranked</h2>
+      <span class="hd-note">work the top first
+        <span class="faintnote">(tiers set in Manager · Calibration)</span></span></div>
+
+    {% if qv.summary %}
+      {% set s=qv.summary %}
+      <div class="runsum">
+        {# One sentence a rep can read. The engineer's breakdown is still here, one
+             click down, because it's the proof that nothing was quietly dropped. #}
+        {# The two flag counts are reported separately on purpose: "somebody left a box
+             empty" and "the export wrote junk into that box" are different problems with
+             different fixes, and one number covering both told a rep neither. A lead with
+             both is counted in each, so they do not sum to the flagged total. #}
+        <span class="plain">All <span class="num">{{s.scored}}</span> scored, none dropped.{%
+          if s.failed %} <span class="warnnum"><span class="num">{{s.failed}}</span> couldn't be
+          scored and are listed at the bottom.</span>{% endif %}{%
+          if s.bad_value %} <span class="num">{{s.bad_value}}</span> had an unrecognized
+          value;{% endif %}{%
+          if s.missing_field %} <span class="num">{{s.missing_field}}</span> had a missing
+          field;{% endif %}{%
+          if s.bad_value or s.missing_field %} all still ranked, marked lower
+          confidence.{% endif %}</span>
+        <details class="sumdet">
+          <summary>Details</summary>
+          <div class="sumdet-bd">
+            <span class="num">{{s.rows_in}}</span> rows read{% if s.blank_skipped %},
+              <span class="num">{{s.blank_skipped}}</span> blank row(s) skipped{% endif %}.
+            {%- if s.by_kind %}<br>Flags:
+              {% for k,n in s.by_kind.items() %}{{k}}
+                <span class="num">{{n}}</span>{% if not loop.last %}, {% endif %}{% endfor %}.{% endif %}
+            {%- if s.missing_cols %}<br>Not in the file:
+              <span class="mono">{{s.missing_cols|join(', ')}}</span>. Treated as blank.{% endif %}
+            {%- if s.ignored_cols %}<br>Ignored:
+              <span class="mono">{{s.ignored_cols|join(', ')}}</span>.{% endif %}
+          </div>
+        </details>
+      </div>
+    {% endif %}
+
+    <div class="card-bd">
+      <div class="chips">
+        {% for val,label,n in qv.tier_chips %}
+          <a class="chip-link{{' on' if qv.tier==val else ''}}" href="{{qv.link(tier=val)}}"
+             >{{label}} <span class="num">{{n}}</span></a>
+        {% endfor %}
+      </div>
+      <div class="chips">
+        {% for val,label,n in qv.conf_chips %}
+          <a class="chip-link{{' on' if qv.conf==val else ''}}" href="{{qv.link(conf=val)}}"
+             >{{label}} <span class="num">{{n}}</span></a>
+        {% endfor %}
+      </div>
+      <form class="qform" method="get" action="{{qv.base_url}}">
+        <input type="hidden" name="tier" value="{{qv.tier}}">
+        <input type="hidden" name="conf" value="{{qv.conf}}">
+        <input type="hidden" name="per" value="{{qv.per}}">
+        <input type="text" name="q" value="{{qv.q}}" placeholder="Filter by lead ID">
+        <button class="btn ghost" type="submit">Filter</button>
+        {% if qv.filtered %}<a class="clear" href="{{qv.base_url}}">Clear filters</a>{% endif %}
+        <a class="btn ghost export" href="{{qv.export_url}}">Download CSV: all
+          <span class="num">{{qv.matching}}</span> matching rows</a>
+        <span class="perpage">Show
+          {% for n in qv.sizes %}<a class="chip-link{{' on' if qv.per==n else ''}}"
+             href="{{qv.link(per=n)}}">{{n}}</a>{% endfor %}
+          per page</span>
+      </form>
+    </div>
+
+    <div class="card-bd flush">
+      {% if qv.rows %}
+        <table>
+          <thead><tr><th>#</th><th>Lead ID</th><th>Tier</th><th>Action</th><th>Win chance <span class="th-note">higher = call sooner</span></th><th>Confidence</th></tr></thead>
+          <tbody>
+          {% for r in qv.rows %}<tr>
+            <td class="rank num">{{qv.first + loop.index0}}</td>
+            <td><b>{{r.get('lead_id') or 'none'}}</b></td>
+            {% if r.get('error') %}
+              <td colspan="4"><span class="err">error: {{r['error']}}</span></td>
+            {% else %}
+              <td><span class="pill {{r['tier']}}">{{r['tier_name']}}</span></td>
+              <td>{{r['action']}}</td>
+              <td class="num">{{(r['score']*100)|round|int}}%</td>
+              {# Confidence says HOW MUCH the model could use; the chip says WHY it could
+                   not. A bare pill left a rep guessing whether a field was empty or
+                   corrupt. The full text stays on the title, so the column stays scannable
+                   and the detail is one hover away. #}
+              {% set why=row_flags(r) %}{% set sev=worst_severity(why) %}
+              <td><span class="pill conf"{% if why %} title="{{why|join(' · ')}}"{% endif %}
+                  >{{r['confidence']}}</span>{% if sev=='bad' %}<span class="badtag"
+                  title="{{why|join(' · ')}}">⚠ unrecognized value</span>{% elif sev=='missing'
+                  %}<span class="misstag" title="{{why|join(' · ')}}">missing field</span>{% endif %}</td>
+            {% endif %}
+          </tr>{% endfor %}
+          </tbody>
+        </table>
+      {% else %}
+        <div class="nomatch">No leads match these filters.
+          <a href="{{qv.base_url}}">Clear filters</a></div>
+      {% endif %}
+    </div>
+
+    {% if qv.rows %}
+      <div class="tfoot">
+        <span><span class="num">{{qv.matching}}</span> matching · showing
+          <span class="num">{{qv.first}}–{{qv.last}}</span></span>
+        <span class="pager">
+          {% if qv.page > 1 %}<a href="{{qv.link(page=qv.page-1)}}">‹ Previous</a>
+          {% else %}<span class="off">‹ Previous</span>{% endif %}
+          <span class="pageno">Page <span class="num">{{qv.page}}</span> of
+            <span class="num">{{qv.npages}}</span></span>
+          {% if qv.page < qv.npages %}<a href="{{qv.link(page=qv.page+1)}}">Next ›</a>
+          {% else %}<span class="off">Next ›</span>{% endif %}
+        </span>
+      </div>
+    {% endif %}
+  </div>
+{% endif %}
+
+{% include '_intake.html' %}
+{% endblock %}

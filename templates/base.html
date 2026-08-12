@@ -1,0 +1,590 @@
+
+<!doctype html><html lang="en"><head><meta charset="utf-8"><title>GTM Lead Scorer</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<style>
+:root{
+  /* --- colour. Grayscale everywhere except tier colours, the score rail and amber flags.
+         The four tier ramps are keyed by each tier's own name, nothing else. --- */
+  --ink:#14171A; --ink-2:#3C4249; --muted:#6E767E; --faint:#9AA1A9;
+  --line:#E5E8EB; --line-2:#D6DBE0; --line-3:#F0F2F4;
+  --bg:#F6F7F8; --surface:#FFFFFF;
+  --accent:#A8492A;                    /* brand ember — one-line swap for your brand's real hex */
+  --hot-bg:#FBF0EB;  --hot-fg:#8E3A1D;  --hot-br:#EFD9CF;
+  --warm-bg:#FCF5E6; --warm-fg:#835F14; --warm-br:#EEE2C4;
+  --cool-bg:#EFF3F7; --cool-fg:#405772; --cool-br:#DCE4EC;
+  --cold-bg:#F2F3F5; --cold-fg:#6E767E; --cold-br:#E3E6E9;
+  --flag-bg:#FCF7EA; --flag-fg:#7A5C10; --flag-br:#EDE2C2;
+  --neutral-fill:#F2F4F6;
+  /* --- one radius, one 8px spacing grid --- */
+  --r:6px;
+  --s1:8px; --s2:16px; --s3:24px; --s4:32px;
+  --s1h:12px;                          /* half-step, only where 8/16 both read wrong */
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",Inter,Roboto,sans-serif;
+     background:var(--bg);color:var(--ink);font-size:14px;line-height:1.45;-webkit-font-smoothing:antialiased}
+.num{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1}
+
+/* --- 1. sticky head: one-line legend, then the tuning strip. Both stay put so the
+       verdict never scrolls away from the control that changes it. --- */
+.head{position:sticky;top:0;z-index:20;background:var(--surface);border-bottom:1px solid var(--line)}
+.topbar{height:44px;display:flex;align-items:center;gap:var(--s1h);padding:0 var(--s3)}
+.home{display:flex;align-items:center;gap:var(--s1);text-decoration:none;color:var(--ink)}
+.wordmark{font-size:13.5px;font-weight:600;letter-spacing:-.01em;white-space:nowrap}
+.startover{font-size:12px;color:var(--muted);text-decoration:none;white-space:nowrap;
+           padding:3px 8px;border-radius:var(--r)}
+.startover:hover{color:var(--ink);background:var(--neutral-fill)}
+.runsum{padding:var(--s1h) var(--s2);border-bottom:1px solid var(--line);font-size:12px;
+        color:var(--muted);line-height:1.6;background:var(--bg)}
+.runsum b{color:var(--ink-2)}
+.runsum .plain{color:var(--ink-2)}
+.runsum .warnnum{color:var(--flag-fg);font-weight:600}
+.sumdet{display:inline-block;margin-left:var(--s1)}
+.sumdet summary{cursor:pointer;color:var(--muted);font-size:11.5px;list-style:none;
+                text-decoration:underline;text-decoration-style:dotted;text-underline-offset:2px}
+.sumdet summary::-webkit-details-marker{display:none}
+.sumdet summary:hover{color:var(--ink-2)}
+.sumdet-bd{margin-top:6px;font-size:11.5px;color:var(--faint);line-height:1.6}
+.faintnote{color:var(--faint)}
+.th-note{text-transform:none;letter-spacing:0;font-weight:400;color:var(--faint);
+         font-size:10px;margin-left:5px}
+.opt{text-transform:none;letter-spacing:0;font-weight:400;color:var(--faint)}
+input[type=number]{width:100%;font:inherit;font-size:13px;color:var(--ink);
+     padding:6px 8px;border:1px solid var(--line-2);border-radius:var(--r);background:var(--surface)}
+input[type=number]:focus{outline:none;border-color:var(--accent)}
+.whydot{color:var(--flag-fg);margin-left:5px;font-size:14px;line-height:1;vertical-align:middle}
+.legend{margin-left:auto;display:flex;align-items:center;gap:var(--s2);flex-wrap:wrap;
+        font-size:11.5px;color:var(--muted)}
+.legend .lg{display:flex;align-items:center;gap:6px;white-space:nowrap}
+.legend b{color:var(--ink-2);font-weight:600}
+.dot{width:9px;height:9px;border-radius:3px;flex:none;border:1px solid}
+
+/* --- the gear: the only way into the manager surface. Quiet, far right. --- */
+.gear{margin-left:var(--s2);display:flex;align-items:center;gap:6px;white-space:nowrap;
+      font-size:12px;color:var(--ink-2);text-decoration:none;padding:4px 10px;
+      border:1px solid var(--line-2);border-radius:var(--r)}
+.gear:hover{background:var(--neutral-fill);border-color:var(--ink-2)}
+
+/* --- 2. Manager · Calibration. Only surface with a cutoff control on it. --- */
+.cal-hd{padding:var(--s2);border-bottom:1px solid var(--line);display:flex;
+        align-items:flex-start;gap:var(--s2);flex-wrap:wrap}
+.cal-hd h1{margin:0;font-size:17px;font-weight:600;letter-spacing:-.015em}
+.cal-hd p{margin:4px 0 0;font-size:12.5px;color:var(--muted);max-width:62ch}
+.rolechip{font-size:11px;color:var(--muted);background:var(--neutral-fill);
+          border:1px solid var(--line-2);border-radius:var(--r);padding:3px 8px;
+          white-space:nowrap;margin-top:6px;display:inline-block}
+.cal-hd .back{margin-left:auto;white-space:nowrap}
+.cal-bd{padding:var(--s3) var(--s2)}
+.cal-bd h2{margin:0 0 var(--s1);font-size:14px;font-weight:600;letter-spacing:-.01em}
+.cal-bd .lede{margin:0 0 var(--s3);font-size:12.5px;color:var(--muted)}
+.bar{position:relative;height:44px;border-radius:var(--r);background:var(--neutral-fill);
+     touch-action:none;user-select:none;margin-bottom:var(--s3)}
+.seg{position:absolute;top:0;bottom:0;display:flex;align-items:center;justify-content:center;
+     overflow:hidden;font-size:11px;font-weight:650;letter-spacing:.06em;text-transform:uppercase}
+.seg:first-child{border-radius:var(--r) 0 0 var(--r)}
+.seg:last-child{border-radius:0 var(--r) var(--r) 0}
+.handle{position:absolute;top:-4px;bottom:-4px;width:12px;margin-left:-6px;padding:0;
+        background:var(--surface);border:1px solid var(--line-2);border-radius:3px;
+        cursor:ew-resize;z-index:3}
+.handle::after{content:"";position:absolute;left:4px;top:50%;margin-top:-5px;width:2px;
+               height:10px;border-left:1px solid var(--line-2);border-right:1px solid var(--line-2)}
+.handle:hover{border-color:var(--ink-2)}
+.handle:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+.vols{display:grid;grid-template-columns:repeat(4,1fr);gap:var(--s1h);margin-bottom:var(--s3)}
+@media(max-width:820px){.vols{grid-template-columns:repeat(2,1fr)}}
+.vol{border:1px solid var(--line);border-radius:var(--r);padding:var(--s1h)}
+.vol .vt{display:flex;align-items:center;gap:7px;margin-bottom:var(--s1)}
+.vol .vn{font-size:30px;font-weight:600;letter-spacing:-.03em;line-height:1}
+.vol .vm{font-size:11.5px;color:var(--muted);margin-top:3px}
+.cal-foot{display:flex;align-items:center;gap:var(--s1h);flex-wrap:wrap;
+          border-top:1px solid var(--line);padding-top:var(--s2)}
+.status{font-size:12.5px;color:var(--muted)}
+.status.changed{color:var(--flag-fg)}
+.status.done{color:var(--ink-2);font-weight:550}
+.cal-note{font-size:11.5px;color:var(--faint);margin:var(--s2) 0 0}
+
+/* --- layout --- */
+.wrap{max-width:1120px;margin:0 auto;padding:var(--s2) var(--s3) var(--s4)}
+
+/* --- cards. Separation is 1px hairlines only: no shadows, no gradients. --- */
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);margin-bottom:var(--s2)}
+.card-hd{padding:var(--s1h) var(--s2);border-bottom:1px solid var(--line);display:flex;align-items:center;gap:var(--s1)}
+.card-hd h2{margin:0;font-size:13px;font-weight:600;letter-spacing:-.005em}
+.card-hd .hd-note{margin-left:auto;font-size:11.5px;color:var(--faint)}
+.card-bd{padding:var(--s2)}
+.card-bd.flush{padding:0}
+.lbl{font-size:10.5px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;
+     color:var(--faint);margin-bottom:var(--s1)}
+
+/* --- 3. verdict card: the hero. Biggest type on the page. --- */
+.verdict{padding:var(--s2);display:flex;align-items:center;gap:var(--s2) var(--s3);flex-wrap:wrap}
+.v-left{display:flex;align-items:center;gap:var(--s2);min-width:0}
+.v-action{font-size:26px;font-weight:600;letter-spacing:-.02em;line-height:1.1}
+.v-right{margin-left:auto;display:flex;align-items:center;gap:var(--s3)}
+.v-score{font-size:44px;font-weight:600;letter-spacing:-.035em;line-height:1;
+         display:flex;align-items:baseline;gap:2px}
+/* The % belongs to the number, not beside it — same ink, just optically smaller so "45%"
+   reads as one figure. (Was .den, the muted "/100" denominator, which is gone.) */
+.v-score .pct{font-size:26px;font-weight:600;letter-spacing:-.01em}
+.v-score-lbl{font-size:10.5px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:var(--faint)}
+.v-foot{width:100%;font-size:12px;color:var(--muted);border-top:1px solid var(--line-3);
+        padding-top:var(--s1h);margin-top:2px}
+.v-foot b{color:var(--ink-2);font-weight:600}
+.pill{font-size:10.5px;font-weight:650;letter-spacing:.07em;text-transform:uppercase;
+      padding:4px 9px;border-radius:var(--r);border:1px solid;white-space:nowrap}
+.pill.big{font-size:15px;letter-spacing:.04em;padding:7px 16px}
+.pill.conf{background:transparent;color:var(--muted);border-color:var(--line-2);font-weight:600}
+.empty{font-size:13px;color:var(--muted);margin:0}
+
+/* --- 4. why: two columns, compact --- */
+.two{display:grid;grid-template-columns:1fr 1fr;gap:0}
+.two>div{padding:var(--s2)}
+.two>div+div{border-left:1px solid var(--line)}
+@media(max-width:820px){.two{grid-template-columns:1fr}.two>div+div{border-left:none;border-top:1px solid var(--line)}}
+.why-row{display:grid;grid-template-columns:96px 1fr auto;gap:var(--s1h);align-items:baseline;
+         padding:6px 0;border-bottom:1px solid var(--line-3)}
+.why-row:last-child{border-bottom:none}
+.why-k{font-size:12px;color:var(--muted)}
+.why-v{font-size:13px;color:var(--ink);min-width:0;overflow-wrap:anywhere}
+.why-v.off{color:var(--muted)}
+.why-v em{font-style:normal;color:var(--muted);font-size:12px}
+.delta{font-size:11.5px;font-weight:600;color:var(--ink-2);background:var(--neutral-fill);
+       border:1px solid var(--line);border-radius:var(--r);padding:1px 6px;white-space:nowrap}
+.delta.neg{color:var(--muted)}
+.why-head{padding-bottom:2px;border-bottom:none}
+.delta-head{font-size:10px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;
+            color:var(--faint);text-align:right;white-space:nowrap}
+.flagtag{font-size:11.5px;color:var(--flag-fg);background:var(--flag-bg);border:1px solid var(--flag-br);
+         border-radius:var(--r);padding:1px 6px;display:inline-block;margin-top:3px}
+/* The two data-quality chips. They must not read as two shades of the same warning: a
+   corrupt value is amber and carries the ⚠, an absent field is plain grey and carries no
+   symbol at all. That is the whole point of splitting them, so the difference is colour
+   AND weight AND glyph, not colour alone - which also keeps them apart for a rep who
+   cannot distinguish the two hues. Amber reuses the --flag-* trio the tool already uses
+   for every other warning surface. */
+.badtag,.misstag{font-size:10.5px;border-radius:var(--r);padding:1px 5px;margin-left:5px;
+                 display:inline-block;white-space:nowrap;vertical-align:middle;cursor:default}
+.badtag{color:var(--flag-fg);background:var(--flag-bg);border:1px solid var(--flag-br);font-weight:600}
+.misstag{color:var(--muted);background:var(--line-3);border:1px solid var(--line)}
+.note{font-size:12px;color:var(--muted);padding:6px 9px;border:1px solid var(--line);
+      border-radius:var(--r);margin-top:var(--s1)}
+.flag{background:var(--flag-bg);border:1px solid var(--flag-br);border-radius:var(--r);
+      padding:var(--s1) 10px;font-size:12.5px;color:var(--flag-fg);margin-bottom:var(--s1)}
+.subnote{font-size:11.5px;color:var(--muted);margin:var(--s1h) 0 0}
+/* The collapsed methodology. Same muted treatment as the .subnote it replaces — same
+   size, same colour, same top margin — so folding it away changes the weight of the
+   block, not its design. The default disclosure triangle is deliberately KEPT: it is the
+   only thing signalling the row can be opened. Focus ring matches .handle, the other
+   keyboard-operable control on the page; never outline:none on something tabbable. */
+.score-legend{font-size:11.5px;color:var(--muted);margin:var(--s1h) 0 0}
+.score-legend summary{cursor:pointer}
+.score-legend summary:hover{color:var(--ink-2)}
+.score-legend summary:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.score-legend p{margin:6px 0 0;line-height:1.6}
+
+/* --- 5. collapsed sections --- */
+details.drawer{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);
+               margin-bottom:var(--s2)}
+details.drawer>summary{padding:var(--s1h) var(--s2);font-size:13px;font-weight:600;cursor:pointer;
+                       display:flex;align-items:center;gap:8px;list-style:none}
+details.drawer>summary::-webkit-details-marker{display:none}
+details.drawer>summary::before{content:"";width:5px;height:5px;flex:none;
+                     border-right:1.5px solid var(--muted);border-bottom:1.5px solid var(--muted);
+                     transform:rotate(-45deg);transition:transform .12s ease}
+details.drawer[open]>summary{border-bottom:1px solid var(--line)}
+details.drawer[open]>summary::before{transform:rotate(45deg)}
+details.drawer>summary .s-note{margin-left:auto;font-size:11.5px;font-weight:400;color:var(--faint)}
+.drawer-bd{padding:var(--s2)}
+.formgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:var(--s1h)}
+@media(max-width:820px){.formgrid{grid-template-columns:repeat(2,1fr)}}
+input[type=text]{width:100%;font:inherit;font-size:13px;color:var(--ink);
+     padding:6px 8px;border:1px solid var(--line-2);border-radius:var(--r);background:var(--surface)}
+input::placeholder{color:var(--faint)}
+input[type=text]:focus{outline:none;border-color:var(--accent)}
+/* --- Searchable single-select: the five categorical intake fields ------------------
+   The trigger repeats input[type=text]'s box exactly — same font, size, padding, border,
+   radius, focus colour — so a dropdown and a plain input sit on one grid row without
+   reading as two different design languages. Change the input rule above and this
+   follows it. The caret reuses the drawer summary's chevron idiom. */
+.cbx{position:relative}
+.cbx-btn{width:100%;font:inherit;font-size:13px;color:var(--ink);
+     padding:6px 8px;border:1px solid var(--line-2);border-radius:var(--r);background:var(--surface);
+     text-align:left;cursor:pointer;display:flex;align-items:center;gap:6px}
+.cbx-btn:focus{outline:none;border-color:var(--accent)}
+.cbx.open>.cbx-btn{border-color:var(--accent)}
+.cbx-txt{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.cbx-txt.ph{color:var(--faint)}          /* matches input::placeholder */
+.cbx-car{flex:none;width:5px;height:5px;margin:0 2px 2px 0;
+     border-right:1.5px solid var(--muted);border-bottom:1.5px solid var(--muted);
+     transform:rotate(45deg)}
+.cbx.open .cbx-car{transform:rotate(-135deg);margin-bottom:0}
+.cbx-pop{position:absolute;z-index:40;top:calc(100% + 3px);left:0;right:0;min-width:170px;
+     background:var(--surface);border:1px solid var(--line-2);border-radius:var(--r);
+     box-shadow:0 6px 18px rgba(20,23,26,.10)}
+.cbx-srch{width:100%;font:inherit;font-size:13px;color:var(--ink);padding:6px 8px;
+     border:0;border-bottom:1px solid var(--line);background:transparent;
+     border-radius:var(--r) var(--r) 0 0}
+.cbx-srch:focus{outline:none}
+.cbx-list{max-height:198px;overflow-y:auto;padding:3px 0}
+.cbx-o{padding:5px 8px;font-size:13px;color:var(--ink-2);cursor:pointer;
+     overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.cbx-o.on{background:var(--neutral-fill);color:var(--ink)}
+.cbx-o b{font-weight:650;color:var(--ink)}
+.cbx-o .cd{color:var(--faint);margin-left:5px}         /* the state code beside its name */
+.cbx-none{padding:7px 8px;font-size:12.5px;color:var(--muted)}
+/* The graceful-degradation choice: pinned OUTSIDE the scroll box so it is always in
+   reach, under a divider, muted and italic so it never reads as a real category. */
+.cbx-any{padding:6px 8px;font-size:13px;cursor:pointer;color:var(--muted);font-style:italic;
+     border-top:1px solid var(--line);border-radius:0 0 var(--r) var(--r)}
+.cbx-any.on{background:var(--neutral-fill)}
+.btns{display:flex;gap:var(--s1);margin-top:var(--s2);padding-top:var(--s2);border-top:1px solid var(--line)}
+.btn{font:inherit;font-size:13px;font-weight:550;padding:6px 13px;border-radius:var(--r);cursor:pointer;
+     border:1px solid var(--ink);background:var(--ink);color:#fff;display:inline-block;text-decoration:none}
+.btn.ghost{background:var(--surface);color:var(--ink-2);border-color:var(--line-2);font-weight:500}
+.btn:disabled{background:var(--line-2);color:var(--faint);border-color:var(--line-2);cursor:not-allowed}
+.subsec{margin-top:var(--s2);padding-top:var(--s2);border-top:1px solid var(--line)}
+.orsep{margin:var(--s2) 0 var(--s1h);padding-top:var(--s2);
+       border-top:1px solid var(--line);font-size:11.5px;color:var(--faint)}
+/* file input: the native control stays in the DOM and keyboard-focusable, just invisible —
+   the <label for> is the visible button, so clicks and Space/Enter both open the picker. */
+.file-native{position:absolute;opacity:0;width:1px;height:1px}
+.filerow{display:flex;gap:var(--s1);align-items:center;flex-wrap:wrap}
+.file-native:focus-visible + .btn{border-color:var(--accent)}
+.filename{font-size:12.5px;color:var(--muted);min-width:0;overflow-wrap:anywhere}
+.filename.none{color:var(--faint)}
+.filehint{font-size:11.5px;color:var(--muted);line-height:1.5;margin:6px 0 0}
+.mono{font-variant-numeric:tabular-nums;color:var(--ink-2)}
+.btn.rank{margin-top:var(--s1h);display:block}
+.fine{font-size:11.5px;color:var(--faint);line-height:1.55;margin:0}
+.fine+.fine{margin-top:var(--s1)}
+
+/* --- queue --- */
+table{width:100%;border-collapse:collapse;font-size:13.5px}
+th,td{text-align:left;padding:9px var(--s2);border-bottom:1px solid var(--line-3)}
+tr:last-child td{border-bottom:none}
+th{font-size:10.5px;color:var(--faint);text-transform:uppercase;letter-spacing:.07em;
+   font-weight:600;border-bottom:1px solid var(--line)}
+td.rank{color:var(--faint)}
+.err{color:var(--flag-fg)}
+.chips{display:flex;flex-wrap:wrap;border:1px solid var(--line-2);border-radius:var(--r);
+       width:max-content;max-width:100%;overflow:hidden;margin-bottom:var(--s2)}
+.chip-link{font-size:12.5px;color:var(--ink-2);text-decoration:none;padding:5px 11px;
+           border-right:1px solid var(--line-2);white-space:nowrap}
+.chip-link:last-child{border-right:none}
+.chip-link:hover{background:var(--neutral-fill)}
+.chip-link.on{background:var(--ink);color:#fff}
+.chip-link .num{color:var(--faint);margin-left:3px}
+.chip-link.on .num{color:var(--line-2)}
+.qform{display:flex;gap:var(--s1);align-items:center;flex-wrap:wrap}
+.qform input[type=text]{width:190px}
+.clear{font-size:12px;color:var(--muted)}
+.export{margin-left:auto}
+.perpage{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--muted)}
+.perpage .chip-link{border:1px solid var(--line-2);border-radius:var(--r);padding:3px 9px}
+.perpage .chip-link+.chip-link{margin-left:-7px}
+.nomatch{padding:var(--s3) var(--s2);font-size:13px;color:var(--muted)}
+.nomatch a{color:var(--ink-2)}
+.tfoot{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:var(--s1);
+       padding:var(--s1h) var(--s2);border-top:1px solid var(--line);font-size:12.5px;color:var(--muted)}
+.pager{display:flex;align-items:center;gap:var(--s1)}
+.pager a,.pager .off{font-size:12.5px;padding:4px 10px;border:1px solid var(--line-2);
+                     border-radius:var(--r);text-decoration:none;color:var(--ink-2)}
+.pager .off{color:var(--faint);border-color:var(--line);cursor:not-allowed}
+.pager .pageno{color:var(--muted)}
+
+/* Tier colour, applied to every shape that carries a tier: legend dot, pill, bar segment.
+   Generated from the tier list the page is given, so a new tier needs one entry there
+   plus its :root ramp. */
+{% for t in tiers %}
+.dot.{{t.key}}{background:var(--{{t.key}}-bg);border-color:var(--{{t.key}}-fg)}
+.pill.{{t.key}}{background:var(--{{t.key}}-bg);color:var(--{{t.key}}-fg);border-color:var(--{{t.key}}-br)}
+.seg.{{t.key}}{background:var(--{{t.key}}-bg);color:var(--{{t.key}}-fg)}
+{% endfor %}
+</style></head><body>
+
+{# 1 — thin top bar: app name, the whole legend on one line, and the one door to the
+     manager surface. No cutoff control lives here: a rep never sets a cutoff. #}
+<header class="head">
+  <div class="topbar">
+    {# The logo goes home, and Start over is always there: from any view — intake,
+         a verdict, a ranked list — one click clears the lead and returns to a fresh
+         form. Deliberately quiet, so it never competes with the verdict. #}
+    <a class="home" href="{{url_for('home')}}" aria-label="Lead Scorer, home">
+      <span class="wordmark">Lead Scorer</span></a>
+    <a class="startover" href="{{url_for('home')}}">Start over</a>
+    <div class="legend">
+      {% for t in tiers %}
+        <span class="lg"><i class="dot {{t.key}}"></i><b>{{t.name}}</b> · {{t.action}}</span>
+      {% endfor %}
+    </div>
+    {% if view=='calibrate' %}
+      <a class="gear" href="{{cal.back_url}}">‹ Back to leads</a>
+    {% else %}
+      <a class="gear" href="{{calibrate_url}}">⚙ Manager · Calibration</a>
+    {% endif %}
+  </div>
+</header>
+
+<div class="wrap">
+
+{% block content %}{% endblock %}
+
+</div>
+
+<script>
+// Manager · Calibration only. The tier names and the histogram are both serialized from
+// the board being calibrated, so a dragged preview counts leads exactly the way the
+// applied cutoffs will once they are saved.
+{% if view=='calibrate' and cal.total %}
+var TIERS={{ tiers|tojson }}, CUT_KEYS={{ cut_keys|tojson }},
+    CUT={{ cut_pct|tojson }}, START={{ cut_pct|tojson }},
+    HIST={{ cal.hist|tojson }}, TOTAL={{ cal.total }};
+
+(function(){
+  var bar=document.getElementById('bar'), btn=document.getElementById('applybtn'),
+      status=document.getElementById('calstatus');
+  if(!bar){return;}
+  var settled=status.textContent.trim(),          // what the server said: "Applied: …"
+      settledCls=status.className,
+      // The board's own tally, rendered by the server. The defaults aren't whole numbers,
+      // so on load these are righter than anything the histogram can say — keep them, and
+      // put them back if a drag returns to where it started.
+      settledVols=TIERS.map(function(t){
+        return [document.getElementById('vn-'+t.key).textContent,
+                document.getElementById('vm-'+t.key).innerHTML];});
+
+  // Boundaries stay ordered hot > warm > cool with 1 point of daylight, and whole-number
+  // only — there are no decimals anywhere in this control.
+  function clamp(key,v){
+    var i=CUT_KEYS.indexOf(key),
+        hi=i===0?100:CUT[CUT_KEYS[i-1]]-1,
+        lo=i===CUT_KEYS.length-1?0:CUT[CUT_KEYS[i+1]]+1;
+    return Math.max(lo,Math.min(hi,Math.round(v)));
+  }
+  function count(lo,hi){                       // leads scoring in [lo,hi)
+    var n=0; for(var s=lo;s<hi;s++){n+=HIST[s]||0;} return n;
+  }
+  function changed(){return CUT_KEYS.some(function(k){return CUT[k]!==START[k];});}
+
+  function render(){
+    var c=changed();
+    for(var i=0;i<TIERS.length;i++){
+      var lo=i===TIERS.length-1?0:CUT[CUT_KEYS[i]],
+          hi=i===0?101:CUT[CUT_KEYS[i-1]],
+          seg=document.getElementById('seg-'+TIERS[i].key),
+          n=count(lo,hi);
+      seg.style.left=lo+'%'; seg.style.width=Math.max(0,Math.min(100,hi)-lo)+'%';
+      seg.textContent=(Math.min(100,hi)-lo)>=9?TIERS[i].name:'';
+      document.getElementById('vn-'+TIERS[i].key).textContent=c?n:settledVols[i][0];
+      document.getElementById('vm-'+TIERS[i].key).innerHTML=c
+        ? 'top '+Math.round(n*100/TOTAL)+'% · score ≥ '+lo
+        : settledVols[i][1];
+    }
+    CUT_KEYS.forEach(function(k){
+      document.getElementById('h-'+k).style.left=CUT[k]+'%';
+      document.getElementById('c_'+k).value=CUT[k];       // hidden; what Apply submits
+    });
+    btn.disabled=!c;                                     // Apply is dead until something moves
+    status.textContent=c?'Preview. Apply to update':settled;
+    status.className=c?'status changed':settledCls;
+  }
+
+  CUT_KEYS.forEach(function(k){
+    var h=document.getElementById('h-'+k);
+    h.addEventListener('pointerdown',function(e){
+      h.setPointerCapture(e.pointerId); e.preventDefault();
+      function move(ev){
+        var b=bar.getBoundingClientRect();
+        CUT[k]=clamp(k,(ev.clientX-b.left)/b.width*100); render();
+      }
+      function up(){h.releasePointerCapture(e.pointerId);
+        h.removeEventListener('pointermove',move); h.removeEventListener('pointerup',up);}
+      h.addEventListener('pointermove',move); h.addEventListener('pointerup',up);
+      move(e);
+    });
+    h.addEventListener('keydown',function(e){          // drag has a keyboard equivalent
+      var d={ArrowLeft:-1,ArrowRight:1,ArrowDown:-1,ArrowUp:1,PageDown:-5,PageUp:5}[e.key];
+      if(d===undefined){return;}
+      e.preventDefault(); CUT[k]=clamp(k,CUT[k]+d); render();
+    });
+  });
+  render();
+})();
+{% endif %}
+
+// Show the chosen filename and keep the Rank button disabled until there is one.
+// The button also starts disabled in the HTML, so it stays correct with JS off.
+(function(){
+  var input=document.getElementById('csvfile'),
+      name=document.getElementById('csvname'),
+      btn=document.getElementById('ranklist');
+  if(!input||!name||!btn){return;}
+  function sync(){
+    var f=(input.files&&input.files.length)?input.files[0].name:'';
+    name.textContent=f||'No file selected';
+    name.classList.toggle('none',!f);
+    btn.disabled=!f;
+  }
+  input.addEventListener('change',sync);
+  sync();
+})();
+
+// --- Searchable single-select. ONE implementation, instantiated once per [data-cbx] ----
+// The vocabulary is serialized with the page, so the menu a rep sees and the values the
+// server accepts have a single source. Picking writes the hidden input under the trigger
+// and nothing else, so /score reads the identical query string it always did.
+// "Unknown / Other" writes '', which is exactly what a blank box has always posted.
+(function(){
+  var VOCAB={{ combo|tojson }},
+      ANY_LABEL={{ unknown_label|tojson }},
+      ANY_VALUE={{ unknown_value|tojson }};
+  var boxes=document.querySelectorAll('[data-cbx]');
+  if(!boxes.length){return;}
+  var openBox=null;                       // the close() of whichever popover is open
+
+  function esc(s){return String(s).replace(/[&<>"]/g,function(c){
+    return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}
+
+  // Bold the matched run. Escaping happens on each slice, so an option string can never
+  // inject markup no matter what the vocabulary holds.
+  function mark(text,q){
+    var i=q?text.toLowerCase().indexOf(q):-1;
+    if(i<0){return esc(text);}
+    return esc(text.slice(0,i))+'<b>'+esc(text.slice(i,i+q.length))+'</b>'+
+           esc(text.slice(i+q.length));
+  }
+
+  function build(box){
+    var opts=VOCAB[box.getAttribute('data-cbx')]||[],
+        ph=box.getAttribute('data-ph')||'',
+        hidden=box.querySelector('input[type=hidden]'),
+        btn=box.querySelector('.cbx-btn'),
+        txt=box.querySelector('.cbx-txt'),
+        pop=null,srch=null,list=null,any=null,
+        rows=[],hi=0;
+    // rows mirrors what is on screen: the filtered options, then one trailing null for the
+    // pinned "Unknown / Other". So hi === rows.length-1 always means the pinned row.
+
+    function paint(){                     // the trigger always reflects the hidden input
+      var v=hidden.value,lab='';
+      for(var i=0;i<opts.length;i++){if(opts[i].v===v){lab=opts[i].l;break;}}
+      if(!lab&&v){lab=v;}                 // an off-list value carried in by an older link
+      txt.textContent=lab||ph;
+      txt.classList.toggle('ph',!lab);
+    }
+
+    function keepInView(el){
+      var top=el.offsetTop,bot=top+el.offsetHeight;
+      if(top<list.scrollTop){list.scrollTop=top;}
+      else if(bot>list.scrollTop+list.clientHeight){list.scrollTop=bot-list.clientHeight;}
+    }
+
+    function paintHi(){
+      var els=list.querySelectorAll('.cbx-o');
+      for(var i=0;i<els.length;i++){els[i].classList.toggle('on',i===hi);}
+      any.classList.toggle('on',hi===rows.length-1);
+      if(hi<els.length){keepInView(els[hi]);}
+    }
+
+    function render(){
+      var q=srch.value.trim().toLowerCase(),html='';
+      rows=[];
+      for(var i=0;i<opts.length;i++){
+        var o=opts[i];
+        // State matches on the name AND the code; every other field has no extra text.
+        if(q&&(o.l+' '+(o.s||'')).toLowerCase().indexOf(q)<0){continue;}
+        html+='<div class="cbx-o" role="option" data-i="'+rows.length+'">'+mark(o.l,q)+
+              // the code is matchable, so it bolds too: searching "tx" marks TX, not Texas
+              ((o.s&&o.s!==o.l)?'<span class="cd">'+mark(o.s,q)+'</span>':'')+'</div>';
+        rows.push(o);
+      }
+      list.innerHTML=html||'<div class="cbx-none">No match</div>';
+      rows.push(null);                    // the pinned choice, always reachable
+      hi=0;
+      if(!q){                             // opening lands on what is already chosen
+        for(var j=0;j<rows.length-1;j++){if(rows[j].v===hidden.value){hi=j;break;}}
+      }
+      paintHi();
+    }
+
+    function choose(i){
+      if(i<0||i>=rows.length){return;}
+      hidden.value=rows[i]?rows[i].v:ANY_VALUE;
+      paint(); close(); btn.focus();
+    }
+
+    function key(e){
+      if(e.key==='ArrowDown'||e.key==='ArrowUp'){
+        e.preventDefault();
+        hi=(hi+(e.key==='ArrowDown'?1:-1)+rows.length)%rows.length;
+        paintHi();
+      }else if(e.key==='Enter'){
+        e.preventDefault();               // Enter picks; it must never submit the form
+        choose(hi);
+      }else if(e.key==='Escape'){
+        e.preventDefault(); close(); btn.focus();
+      }else if(e.key==='Tab'){close();}
+    }
+
+    function ensure(){
+      if(pop){return;}
+      pop=document.createElement('div');
+      pop.className='cbx-pop'; pop.hidden=true;
+      pop.innerHTML='<input type="text" class="cbx-srch" autocomplete="off" '+
+        'placeholder="Search…" aria-label="Search options">'+
+        '<div class="cbx-list" role="listbox"></div><div class="cbx-any" role="option"></div>';
+      box.appendChild(pop);
+      srch=pop.querySelector('.cbx-srch');
+      list=pop.querySelector('.cbx-list');
+      any=pop.querySelector('.cbx-any');
+      any.textContent=ANY_LABEL;
+      srch.addEventListener('input',render);
+      srch.addEventListener('keydown',key);
+      // mousedown, not click: it lands before the search box loses focus.
+      list.addEventListener('mousedown',function(e){
+        var t=e.target.closest('.cbx-o'); if(!t){return;}
+        e.preventDefault(); choose(parseInt(t.getAttribute('data-i'),10));
+      });
+      any.addEventListener('mousedown',function(e){e.preventDefault();choose(rows.length-1);});
+      list.addEventListener('mousemove',function(e){
+        var t=e.target.closest('.cbx-o'); if(!t){return;}
+        hi=parseInt(t.getAttribute('data-i'),10); paintHi();
+      });
+      any.addEventListener('mousemove',function(){hi=rows.length-1;paintHi();});
+    }
+
+    function close(){
+      if(!pop||pop.hidden){return;}
+      pop.hidden=true; box.classList.remove('open');
+      btn.setAttribute('aria-expanded','false');
+      if(openBox===close){openBox=null;}
+    }
+
+    function show(){
+      if(openBox){openBox();}             // at most one popover open at a time
+      ensure();
+      pop.hidden=false; box.classList.add('open');
+      btn.setAttribute('aria-expanded','true');
+      srch.value=''; render(); srch.focus();
+      openBox=close;
+    }
+
+    btn.addEventListener('click',function(e){
+      e.preventDefault();
+      if(pop&&!pop.hidden){close();}else{show();}
+    });
+    paint();
+  }
+
+  for(var i=0;i<boxes.length;i++){build(boxes[i]);}
+  document.addEventListener('mousedown',function(e){
+    if(openBox&&e.target&&e.target.closest&&!e.target.closest('.cbx')){openBox();}
+  });
+  document.addEventListener('keydown',function(e){
+    if(e.key==='Escape'&&openBox){openBox();}
+  });
+})();
+</script>
+
+</body></html>

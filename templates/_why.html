@@ -1,0 +1,77 @@
+    {# 4 — why: segment win-rates on the left, what you typed on the right.
+         These numbers are HISTORY, not model arithmetic: each one is how often past
+         leads with that one trait won, taken on its own. They are not the model's
+         contributions and they do not add up to the score, so nothing here may say or
+         imply that they do. The scoring engine documents why track record was chosen
+         over coefficients; keep the labels honest about which of the two this is. #}
+    <div class="card">
+      <div class="card-hd"><h2>Why this score</h2>
+        <span class="hd-note">Baseline close rate <span class="num">{{base_pct}}%</span></span></div>
+      <div class="two">
+        <div>
+          <div class="lbl">How this lead's traits have performed</div>
+          {% set rows=why_rows(r) %}{% set unused=unused_rows(r) %}
+          {% if rows or unused %}
+            <div class="why-row why-head"><div></div><div></div>
+              <div class="delta-head">vs baseline</div></div>
+            {% for k,v,rate,delta,neg in rows %}
+              <div class="why-row">
+                <div class="why-k">{{k}}</div>
+                <div class="why-v">{{v}}<em>: <span class="num">{{rate}}%</span> close rate</em></div>
+                <div class="delta num{% if neg %} neg{% endif %}">{{delta}}</div>
+              </div>
+            {% endfor %}
+            {# Same two chips as the ranked board, same words, same colours. The reason
+                 text already distinguished these in prose; the chip makes it readable at a
+                 glance and keeps one vocabulary across both surfaces. #}
+            {% for k,reason,sev in unused %}
+              <div class="why-row">
+                <div class="why-k">{{k}}</div>
+                <div class="why-v off">Not used<em>: {{reason}}</em>{%
+                  if sev=='bad' %} <span class="badtag">⚠ unrecognized value</span>{%
+                  else %} <span class="misstag">missing field</span>{% endif %}</div>
+                <div class="delta num neg">0.0 pts</div>
+              </div>
+            {% endfor %}
+            {# The methodology, kept but folded away. A rep glancing at a score should
+                 not have to re-read four lines of it every time; anyone who wants to know
+                 how the number is built is one click (or one Enter) from the whole thing.
+                 Native <details>: no JS, keyboard-operable for free, and it renders
+                 collapsed on the server so there is no flash of open content. #}
+            <details class="score-legend">
+              <summary>What these numbers are</summary>
+              <p>Each % is how often past leads with that one trait won, on its own
+                (baseline: <span class="num">{{base_pct}}%</span>), and the ± points are
+                the gap to that baseline. It is track record, not a breakdown of the
+                score: the traits overlap, so these do not add up to the win chance
+                above. Read them as what the history says about a lead like this one.</p>
+            </details>
+          {% else %}
+            <p class="empty">Not enough recognized information to explain this score. Fill in more fields.</p>
+          {% endif %}
+        </div>
+        <div>
+          <div class="lbl">Your input</div>
+          {% for label,val,note,flag in input_rows(r, one, derived_params) %}
+            <div class="why-row">
+              <div class="why-k">{{label}}</div>
+              <div class="why-v{% if not val %} off{% endif %}">{{val or 'missing'}}
+                {%- if note %} <em>({{note}})</em>{% endif %}
+                {%- if flag %}<br><span class="flagtag">{{flag}}</span>{% endif %}</div>
+              <div></div>
+            </div>
+          {% endfor %}
+          {% for n in r.get('normalized',[]) %}<div class="note">Read as: {{n}}</div>{% endfor %}
+          {# Stays ALWAYS visible: it is the caveat that stops a rep mistrusting a low
+               score, so it must never be behind a click. An earlier version overstated
+               it, which was not true: a blank field takes information away from the
+               model, so the number does shift. There is simply no penalty applied on
+               top. State is the sharpest case, being a signal in its own right. Same
+               wording as the empty-state card, so the two agree. #}
+          <p class="subnote">Missing or unrecognized fields aren't penalized directly. The
+            score uses whatever information remains, so it can shift, and confidence drops.
+            State is the exception: a blank state means "no state on file", which is itself
+            a signal and clearly moves the score.</p>
+        </div>
+      </div>
+    </div>

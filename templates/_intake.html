@@ -1,0 +1,71 @@
+{# 5 — the intake form, collapsed. Open on a bare page, since there's no verdict
+     to look at yet; closed once a lead has been scored. #}
+<details class="drawer" id="intake" {% if not single and not qv %}open{% endif %}>
+  <summary>Lead intake<span class="s-note">Type a lead, or upload a list</span></summary>
+  <div class="drawer-bd">
+    {# Single lead is a GET: the result page is then just a URL, so refresh and back
+         never re-submit, and the link reproduces the same score. #}
+    <form method="get" action="/score" id="leadform">
+      <div class="lbl">Lead</div>
+      {# The five categorical fields are searchable single-selects: a rep searches the
+           curated vocabulary and picks a value, or picks "Unknown / Other". There is no
+           free-text commit. What gets SUBMITTED is the hidden input under each trigger,
+           holding the exact string the free-text box used to post, so the query string is
+           byte-identical and /score is untouched. The popover itself is built in JS from
+           one serialized table (see the cbx block below) — one implementation, five
+           instances. Prior score and Lead ID stay the plain inputs they were.
+           An older link carrying a hand-typed value (?channel=youtube) still repopulates
+           and still re-posts that value, so no saved URL changes what it scores.
+           autocomplete="off" goes on EVERY input, including the ones with no list:
+           without it the browser offers its own history for that field name, which is
+           where stray values like a previously-typed lead id or an out-of-range 385
+           come from. Those are the browser's, not ours, and this is what stops them. #}
+      <div class="formgrid">
+        {% for f in form_fields %}
+          <div><div class="lbl">{{f.label}}</div>
+            {% if f.opts %}
+              {% set _v=one.get(f.param,'') %}{% set _l=combo_label(f.param,_v) %}
+              <div class="cbx" data-cbx="{{f.param}}" data-ph="{{f.eg}}">
+                <input type="hidden" name="{{f.param}}" value="{{_v}}">
+                <button type="button" class="cbx-btn" aria-haspopup="listbox"
+                        aria-expanded="false" aria-label="{{f.label}}">
+                  <span class="cbx-txt{% if not _l %} ph{% endif %}">{{ _l or f.eg }}</span>
+                  <span class="cbx-car"></span>
+                </button>
+              </div>
+            {% else %}
+              <input {% if f.numeric %}type="number" min="0" max="100" step="1" class="num"
+                     {% else %}type="text"{% endif %}
+                     name="{{f.param}}" value="{{one.get(f.param,'')}}" placeholder="{{f.eg}}"
+                     autocomplete="off">
+            {% endif %}
+          </div>
+        {% endfor %}
+        <div><div class="lbl">Lead ID <span class="opt">optional</span></div>
+          <input type="text" name="lead_id" value="{{one.get('lead_id','')}}"
+                 placeholder="e.g. L0231" autocomplete="off"></div>
+      </div>
+      <p class="filehint">Search and pick a value, or choose Unknown / Other. Unknown and
+        blank fields still score, just at lower confidence. Time zone comes from the state.</p>
+      <input type="hidden" name="go" value="1">   {# an all-blank lead is still a lead to score #}
+      <div class="btns">
+        <button class="btn" type="submit">Score</button>
+        <a class="btn ghost" href="/">Reset</a>
+      </div>
+    </form>
+    {# The upload stays a POST, then redirects to /results/<token> (Post/Redirect/Get). #}
+    <div class="orsep">or</div>
+    <form method="post" action="/rank" enctype="multipart/form-data" id="rankform">
+      <div class="lbl">List</div>
+      <div class="filerow">
+        <input type="file" name="csv" id="csvfile" accept=".csv" class="file-native">
+        <label class="btn ghost" for="csvfile">Choose CSV</label>
+        <span class="filename none" id="csvname">No file selected</span>
+        <button class="btn rank" type="submit" id="ranklist" disabled>Rank</button>
+      </div>
+      <p class="filehint">A spreadsheet with the same fields as above, plus an optional
+        <span class="mono">lead_id</span>. Extra columns are ignored, and missing ones lower
+        confidence rather than the score.</p>
+    </form>
+  </div>
+</details>

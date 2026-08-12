@@ -1,0 +1,47 @@
+{% extends 'base.html' %}{% block content %}
+{% if single %}
+  {% set r=single %}
+  {% if r.get('error') %}
+    {# 3 — verdict slot, degraded: scoring failed, say so where the verdict would be #}
+    <div class="card"><div class="card-hd"><h2>Verdict</h2></div>
+      <div class="card-bd">
+        <div class="flag">{{r['error']}}</div>
+        {% for n in r.get('normalized',[]) %}<div class="note">Read as: {{n}}</div>{% endfor %}
+        {% for f in r.get('flags',[]) %}<div class="flag">{{f}}</div>{% endfor %}
+      </div>
+    </div>
+  {% else %}
+    {# 3 — verdict card: the hero. Tier badge + action line + confidence + score. #}
+    <div class="card verdict" id="verdict" data-score="{{score_pct}}">
+      <div class="v-left">
+        <span class="pill big {{r['tier']}}" id="v-tier">{{r['tier_name']}}</span>
+        <div class="v-action" id="v-action">{{r['action']}}</div>
+      </div>
+      <div class="v-right">
+        <span class="pill conf">{{r['confidence']}} confidence</span>
+        <div>
+          <div class="v-score-lbl">Win chance</div>
+          <div class="v-score num">{{score_pct}}<span class="pct">%</span></div>
+        </div>
+      </div>
+      <div class="v-foot">
+        <b>{{r['confidence']}} confidence</b>: {{r['confidence_note']}}
+        ({{usable(r)}} of {{total}} scoring fields usable).
+        {%- if r.get('flags') %} The ranking still holds; treat the score as approximate.{% endif %}
+        &nbsp;·&nbsp; High = all fields usable · Medium = 1 missing · Low = 2+
+      </div>
+    </div>
+
+    {% include '_why.html' %}
+  {% endif %}
+{% elif not qv %}
+  <div class="card verdict">
+    <p class="empty">Fill in what you know below, then press <b>Score</b>. Missing or
+      unrecognized fields aren't penalized directly. The score uses whatever information
+      remains, so it can shift, and confidence drops. State is the exception: a blank state
+      means "no state on file", which is itself a signal and clearly moves the score.</p>
+  </div>
+{% endif %}
+
+{% include '_intake.html' %}
+{% endblock %}

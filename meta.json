@@ -1,0 +1,101 @@
+{
+  "base_rate": 0.1598,
+  "segment_win_rates": {
+    "channel": {
+      "bing": {
+        "win_rate": 0.236,
+        "n": 356
+      },
+      "google": {
+        "win_rate": 0.24,
+        "n": 1960
+      },
+      "meta": {
+        "win_rate": 0.113,
+        "n": 2613
+      },
+      "tiktok": {
+        "win_rate": 0.051,
+        "n": 571
+      }
+    },
+    "icp_category": {
+      "High Value": {
+        "win_rate": 0.286,
+        "n": 934
+      },
+      "Ideal": {
+        "win_rate": 0.228,
+        "n": 948
+      },
+      "Low Value": {
+        "win_rate": 0.107,
+        "n": 3468
+      },
+      "Unknown": {
+        "win_rate": 0.167,
+        "n": 150
+      }
+    },
+    "company_annual_revenue": {
+      "$1,000,000 to $4,999,999": {
+        "win_rate": 0.29,
+        "n": 666
+      },
+      "$10,000,000 to $24,999,999": {
+        "win_rate": 0.24,
+        "n": 100
+      },
+      "$250,000 to $499,999": {
+        "win_rate": 0.164,
+        "n": 1192
+      },
+      "$5,000,000 to $9,999,999": {
+        "win_rate": 0.325,
+        "n": 151
+      },
+      "$500,000 to $999,999": {
+        "win_rate": 0.241,
+        "n": 839
+      },
+      "Less than $250,000": {
+        "win_rate": 0.09,
+        "n": 2349
+      },
+      "Self-Serve Signup": {
+        "win_rate": 0.015,
+        "n": 203
+      }
+    },
+    "state": {
+      "missing": {
+        "win_rate": 0.029,
+        "n": 313
+      },
+      "on file": {
+        "win_rate": 0.168,
+        "n": 5187
+      }
+    }
+  },
+  "tier_thresholds": {
+    "hot": 0.9,
+    "warm": 0.7,
+    "cool": 0.35
+  },
+  "features": [
+    "channel",
+    "icp_category",
+    "company_annual_revenue",
+    "utm_medium",
+    "time_zone",
+    "legacy_score",
+    "state_missing"
+  ],
+  "tier_cutoffs_abs": {
+    "hot": 0.3053,
+    "warm": 0.1365,
+    "cool": 0.0386
+  },
+  "legacy_score_median": 44.0
+}

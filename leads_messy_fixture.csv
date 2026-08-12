@@ -1,0 +1,22 @@
+lead_id, Channel ,ICP_Category,company annual revenue,UTM Medium,Legacy Score,state,Time Zone,internal_notes,expectations
+M-01,google,High Value,"$1,000,000 to $4,999,999",brand,80,TX,Eastern,clean baseline,clean|high
+M-02,GOOGLE,low value,"less than $250,000",BRAND,40,tx,eastern ,mis-cased everywhere - the headline bug,normalized|high
+M-03,  Google Ads  ,  Ideal  ,"  $500,000 to $999,999  ",  Brand  ,55,  CA  ,  Pacific  ,padded with whitespace,normalized|high
+M-04,youtube,High Value,"$1,000,000 to $4,999,999",brand,60,NY,Eastern,genuinely unseen channel,flagged|medium
+M-05,google,Nonesuch,"$1,000,000 to $4,999,999",brand,60,NY,Eastern,genuinely unseen icp,flagged|medium
+M-06,google,High Value,2.3M,brand,60,NY,Eastern,revenue as an amount,normalized|high
+M-07,google,High Value,banana,brand,60,NY,Eastern,junk revenue,flagged|medium
+M-08,google,High Value,-500,brand,60,NY,Eastern,negative revenue,flagged|medium
+M-09,google,High Value,"$1,000,000 to $4,999,999",brand,not-a-number,NY,Eastern,junk legacy score,flagged|medium
+M-10,google,High Value,"$1,000,000 to $4,999,999",brand,,NY,Eastern,blank legacy score,flagged|medium
+M-01,meta,Low Value,"Less than $250,000",prospecting,20,FL,Central,duplicate of M-01 - keep both,duplicate
+,bing,Ideal,"$500,000 to $999,999",brand,70,WA,Pacific,no lead id - not callable,unscored_no_id
+M-13,tiktok,Low Value,"Less than $250,000",prospecting,10,,Mountain,blank state,clean
+M-14,google,High Value,"$1,000,000 to $4,999,999",brand,60,NY,Neptune,unseen time zone - warns but stays high,clean|high
+,,,,,,,,,
+
+M-16,fb,Ideal,"$5,000,000 to $9,999,999",brand,75,IL,Central,channel alias fb -> meta,normalized|high
+M-17,google,High Value,"$1,000,000 to $4,999,999",brand,65,OH,Eastern,short row - trailing cells missing
+M-18,google,High Value,"$1,000,000 to $4,999,999",brand,45,PA,Eastern,long row - extra cells,ragged,extra,junk
+M-19,,,,,,,,everything blank but the id,flagged|low
+M-20,google,High Value,Self-Serve Signup,brand,50,NV,Pacific,revenue passthrough category,clean|high
