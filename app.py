@@ -30,7 +30,7 @@ WHERE THINGS LIVE
   OFFERED       ~101   what the combo boxes SUGGEST. Curated by hand; not what's accepted.
   APPLIED        ~26   the team-wide cutoffs in force. Only Manager · Calibration writes it.
   PAGE          ~152   the entire UI: one Jinja template, styles included.
-  _RESULTS      ~149   ranked boards held between the POST and the GET, newest 8.
+  _RESULTS      ~149   ranked boards held between the POST and the GET, newest 64.
 
 Two names you will see everywhere in the template:
   one   the values the rep typed, keyed by URL param — repopulates the form and the
@@ -39,7 +39,7 @@ Two names you will see everywhere in the template:
 
 Grep '# DEMO:' for the spots most likely to be hit live."""
 from flask import Flask, request, render_template, redirect, url_for, Response
-from werkzeug.exceptions import HTTPException
+from werkzeug.exceptions import HTTPException, RequestEntityTooLarge
 import io, os, csv, math, re, json, secrets, collections, logging, traceback
 import scorer
 
@@ -62,6 +62,13 @@ csv.field_size_limit(10_000_000)
 
 app=Flask(__name__)
 
+# 10MB. A real CRM export of 50,000 leads is a few megabytes, so this is generous for the
+# job and still small enough that a public URL cannot be filled up by whatever somebody
+# decides to drag onto the page. Werkzeug enforces it while reading the request, so the
+# bytes never land anywhere; without it the upload is unbounded. The handler further down
+# turns the refusal into a sentence — see _too_big.
+app.config['MAX_CONTENT_LENGTH']=10*1024*1024
+
 TIERS=scorer.TIERS                  # [{key,name,action}] hottest -> coldest. THE vocabulary.
 CUT_KEYS=scorer.CUT_KEYS            # the three movable boundaries: hot, warm, cool
 CONF_KEYS=[c.lower() for c in scorer.CONF_LEVELS]
@@ -70,12 +77,16 @@ PAGE_SIZE=50                        # default rows per page; the rep can pick fr
 
 # The team-wide tier cutoffs. Defaults come from meta.json via scorer; a manager moves
 # them in Manager · Calibration and every view reads from here, so one setting drives the
-# board and the single-lead verdict alike. Module-level state like _RESULTS below — this
-# is a single-user local tool, not a multi-tenant server.
+# board and the single-lead verdict alike. Module-level state like _RESULTS below, and
+# team-wide means exactly that: this is one process serving a public demo, so a cutoff one
+# visitor applies is the cutoff the next visitor sees, and a restart puts it back to the
+# meta.json defaults. That is the right shape for a shared setting a manager owns and the
+# wrong shape for per-user preferences, which is why nothing else lives up here.
 APPLIED={'cut':dict(scorer.DEFAULT_CUTOFFS)}
 # Read by: results() (re-tiers the board), _ctx (the verdict), calibrate(). Written by
-# exactly one function, apply_cutoffs(). make_submission.py deliberately ignores it and
-# reads scorer.DEFAULT_CUTOFFS, so the graded output cannot depend on a demo session.
+# exactly one function, apply_cutoffs(). Anything scoring OUTSIDE a request — the test
+# suite, a script — deliberately ignores it and reads scorer.DEFAULT_CUTOFFS instead, so a
+# number produced off-request cannot depend on what somebody dragged a slider to.
 
 # Short column heading per score-driving field, for the "why" table.
 BASE_PCT=round(scorer.BASE*100,1)  # read from meta, never hardcoded
@@ -228,9 +239,15 @@ def _input_rows(r, one, derived=()):
 
 # Ranked CSV results live here between the POST that builds them and the GET that shows
 # them, so the results page is never the direct response to a POST. Keyed by a one-shot
-# token; only the last few are kept, since this is a single-user local tool.
+# unguessable token, and the oldest boards fall out once the cap is reached.
+#
+# 64, not 8: this is a public demo now, so the store is shared by everyone who is on the
+# page at once rather than by one person on a laptop. 8 meant a second visitor uploading a
+# file could push a first visitor's board out from under them mid-read, and the page they
+# came back to said the ranking had expired. 64 boards is a few megabytes of dicts and
+# covers a realistic burst; the token is still one-shot and nothing is written to disk.
 _RESULTS={}
-_RESULTS_MAX=8
+_RESULTS_MAX=64
 
 # The page is six files under templates/ now. base.html holds the shell - head, CSS, top
 # bar and the page script - and each view fills its {% block content %}. _intake.html is
@@ -369,8 +386,8 @@ def read_leads(raw):
 _CONF_RANK={c:i for i,c in enumerate(scorer.CONF_LEVELS)}
 
 def score_row(lead, cuts=None):
-    """Score ONE ingested row. THE batch entry point: the ranked board and
-    make_submission both come through here, so these rules cannot drift apart.
+    """Score ONE ingested row. THE batch entry point: the ranked board, the CSV export and
+    the tests all come through here, so these rules cannot drift apart.
 
     Two things happen that the single-lead form does not do, both because a batch row has
     to be actionable on its own:
@@ -623,6 +640,14 @@ def export(token):
     return Response(buf.getvalue(), mimetype='text/csv',
                     headers={'Content-Disposition':'attachment; filename="lead-scorer-results.csv"'})
 
+@app.route('/healthz')
+def healthz():
+    """Liveness, for whatever is hosting this. Deliberately touches nothing: no model, no
+    template, no _RESULTS. A health check that exercised the scorer would take the site
+    down for a reason the site could survive, and one that rendered a page would keep the
+    log noisy. If the process is up enough to route, it answers."""
+    return 'ok', 200
+
 # ---------------------------------------------------------------------------
 # ERROR TAXONOMY — a stable code on screen, the whole story in the log.
 #
@@ -712,6 +737,25 @@ def _fingerprint():
     except Exception:
         return '<fingerprint unavailable>'
 
+@app.errorhandler(RequestEntityTooLarge)
+def _too_big(e):
+    """An upload over MAX_CONTENT_LENGTH, answered the way every other bad file is: a
+    sentence where the verdict goes.
+
+    This is HANDLED VALIDATION, not a crash — the taxonomy above says so — and it must not
+    reach _unhandled, which would let Werkzeug's bare 413 page through instead. It is
+    registered as its own handler because Flask matches the most specific one, and
+    RequestEntityTooLarge is an HTTPException that _unhandled deliberately passes along.
+
+    Not flask.flash: that needs a session, a session needs a SECRET_KEY, and this app has
+    neither and needs neither. Every other refusal in the file — an unreadable CSV, an
+    expired ranking token — already renders through _ctx(single={'error': ...}), so the
+    size limit reads the same as the rest rather than inventing a second channel."""
+    mb=app.config['MAX_CONTENT_LENGTH']//(1024*1024)
+    return render_template('score.html', **_ctx(single={'error':
+        f'That file is too large to upload here (the limit is {mb}MB). '
+        'Split it and rank the parts, or run the tool locally.'})), 413
+
 @app.errorhandler(Exception)
 def _unhandled(e):
     """Last line of defence. Anything that reaches here is a bug, so it is logged in full
@@ -737,4 +781,12 @@ if __name__=='__main__':
     # to the AirPlay receiver by default, which answers with a 403 and looks like the app
     # failing rather than the port being taken. PORT=8000 python app.py sidesteps it, and
     # every host that injects $PORT works without an edit.
-    app.run(debug=False, port=int(os.environ.get("PORT", 5000)))
+    #
+    # HOST defaults to localhost, and that default is the safe one: this branch is the
+    # DEVELOPMENT server, and a dev server bound to 0.0.0.0 is reachable by everything on
+    # the coffee-shop wifi. Deployment does not come through here at all — the Procfile,
+    # render.yaml and Dockerfile all start gunicorn with an explicit --bind 0.0.0.0, which
+    # is the process that should be answering the internet. HOST is here for the case in
+    # between, a container or a VM where the port has to be published from inside.
+    app.run(debug=False, host=os.environ.get("HOST", "127.0.0.1"),
+            port=int(os.environ.get("PORT", 5000)))

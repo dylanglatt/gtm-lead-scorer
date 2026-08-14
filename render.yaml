@@ -1,0 +1,22 @@
+# One-click deploy on Render: New → Blueprint → point it at this repo.
+#
+# startCommand is the Procfile line, byte for byte. Two places say it because Render reads
+# this file and a Procfile host reads the other; they must not drift, so if one changes the
+# other changes with it.
+#
+# PYTHON_VERSION is pinned because model.joblib is a pickle: scikit-learn is pinned exactly
+# in requirements.txt for the same reason, and pinning the interpreter alongside it keeps
+# the load path identical on every build rather than whatever Render's default happens to
+# be that month.
+services:
+  - type: web
+    name: gtm-lead-scorer
+    runtime: python
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn app:app --bind 0.0.0.0:$PORT --workers 2 --timeout 120
+    # The route exists for exactly this: a health check that never touches the model.
+    healthCheckPath: /healthz
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.12.7
