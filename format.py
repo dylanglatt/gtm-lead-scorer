@@ -23,8 +23,8 @@ def _title(s): return ' '.join(w if w in _SMALL else w.capitalize() for w in s.s
 
 def _rate_pct(x):
     """A close rate as a percent. Whole numbers, except below 10%, where a decimal is
-    the difference between a real number and a shrug: a missing state closes at 1.7% and
-    rounding that to 2% is a 15% error on the biggest mover the panel ever shows."""
+    the difference between a real number and a shrug: a missing state closes at 8.4%, and
+    the panel's biggest mover deserves better than being rounded off to 8."""
     v=x*100
     return f'{v:.1f}' if v<10 else round(v)
 

@@ -191,7 +191,7 @@ STATE_LABELS={code:_title(name) for name,code in STATE_NAMES.items()}
 # a per-field special case: scorer._missing() is the rule, and '' is the one value it
 # calls missing for all five. It matters that this is NOT the string 'Unknown' — that is
 # a REAL, scoreable level for Fit (scorer.REAL_LEVELS: a value the CRM records as an
-# answer, 17.6% close rate), so posting it would quietly record an answer the rep did
+# answer, 25.7% close rate), so posting it would quietly record an answer the rep did
 # not give. Empty is what a blank box has always posted.
 UNKNOWN_VALUE=''
 UNKNOWN_LABEL='Unknown / Other'

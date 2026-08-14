@@ -20,7 +20,7 @@ THE FIVE CHOICES YOU WILL BE ASKED ABOUT:
   A blank field lowers CONFIDENCE, not the SCORE — with ONE named exception. A rep
   leaving a box empty means "I didn't type it", not "this lead is junk", so a blank
   must not drag the score down. The exception is `state`: the model was fit with a
-  missing state as a feature in its own right, and those leads won 1.7% against a 16.5%
+  missing state as a feature in its own right, and those leads won 8.4% against a 25.0%
   base, so a blank state is real information rather than a hole. It is the only field
   where leaving the box empty changes the number, and the UI says so on the spot.
 
@@ -34,13 +34,12 @@ THE FIVE CHOICES YOU WILL BE ASKED ABOUT:
   handle_unknown='ignore', so a value the model never saw contributes zero instead of
   raising. That is what lets an unseen lead still score. See normalize_category.
 
-  'Unknown' ICP is a REAL level, not missing data. The CRM writes it as an answer — 17
-  leads in the history carry it — and it closes at 17.6%, between Low Value and Ideal.
-  What it means upstream is not something this data records: all 17 are 'Not Enriched',
-  so it is NOT an enrichment result. See REAL_LEVELS / _missing.
+  'Unknown' ICP is a REAL level, not missing data. The CRM writes it as an answer — 701
+  leads in the history carry it — and it closes at 25.7%, between Low Value and Ideal.
+  What it means upstream is not something this data records. See REAL_LEVELS / _missing.
 
   The "why" uses SEGMENT WIN-RATES, not model coefficients. A correlated logistic gives
-  High Value a negative coefficient even though High Value closes at 30% — true to the
+  High Value a negative coefficient even though High Value closes at 36% — true to the
   math, indefensible to a rep. Segment rates are both true and explainable. See _why.
 
 Cutoffs are NOT decided here. tier_for takes them as an argument; app.py owns which
@@ -131,10 +130,11 @@ def validate_number(field, v):
 # Formats a CRM actually exports. strptime rejects an impossible month or day-of-month
 # for us (2026-13-45, month 13), so this needs no calendar of its own.
 #
-# The 2-digit-year forms are here for robustness, NOT for the current file: leads_to_score
-# .csv stamps '2026-05-18 20:42:20' and every one of its 4255 rows already validates on the
-# first pattern. '5/18/26 20:42' is what a SPREADSHEET renders that value as, not what the
-# bytes say — worth accepting in case an export ever really is written that way.
+# The 2-digit-year forms are here for robustness, NOT for any file in this repo: created_at
+# is an optional ingested column, and an export that carries one stamps it ISO-first,
+# '2026-05-18 20:42:20', which validates on the first pattern. '5/18/26 20:42' is what a
+# SPREADSHEET renders that value as, not what the bytes say — worth accepting in case an
+# export ever really is written that way.
 #
 # %m/%d/%y is ambiguous with %d/%m/%y and we do not try to resolve it. Nothing reads the
 # parsed datetime: this decides valid-or-not, never a value, so the ambiguity is harmless.
@@ -159,10 +159,9 @@ def validate_date(v):
 
 # Values that LOOK like a placeholder but are a real recorded level for one specific
 # field. icp_category='Unknown' is the CRM's own answer, not an empty box. It closes at
-# 17.6%, between Low Value (11%) and Ideal (24%), and the encoder was fit with it, so the
-# model can use it and should. Why the CRM writes it is not recorded anywhere we can see:
-# enrichment_status is 'Not Enriched' on all 17 of them (and on 99.9% of the history), so
-# whatever it means, it is not the outcome of an enrichment run.
+# 25.7%, between Low Value (18%) and Ideal (31%), and the encoder was fit with it, so the
+# model can use it and should. Why the CRM writes it is not recorded anywhere we can see —
+# 701 leads carry it and nothing else about them explains what it stands for.
 #
 # Scoped per field on purpose. 'Unknown' is not a level anywhere else, and _blank is
 # consulted for every column: company_annual_revenue and utm_medium both have a real
@@ -439,7 +438,7 @@ def _prep_dict(lead):
     # form, on the theory that a rep leaving the box empty means "I didn't type it" rather
     # than "no state on file". That theory cost more than it bought: the same lead scored
     # 38% Warm typed and 3.4% Cold uploaded, so the tool contradicted itself on the same
-    # record. A blank state is a trained signal (those leads won 1.7%), so it is read the
+    # record. A blank state is a trained signal (those leads won 8.4%), so it is read the
     # same way whoever supplies it, and the UI says so rather than hiding it.
     r['state_missing']=1 if _blank(r.get('state')) else 0
     # A real level reaches the encoder as itself; only a genuine hole becomes 'nan'.
@@ -504,10 +503,10 @@ def confidence(n_unusable):
     return ('Low',f"{n_unusable} fields the model couldn't use")
 
 def _why(lead):
-    """The explanation: each field's real historical close rate against the 16.5% base.
+    """The explanation: each field's real historical close rate against the 25.0% base.
 
     Deliberately NOT the model's coefficients. The logistic is correlated, so it hands
-    High Value a negative coefficient even though High Value closes at 30% — true to the
+    High Value a negative coefficient even though High Value closes at 36% — true to the
     math and impossible to defend to a rep. Segment rates are both."""
     out=[]
     def add(label, value, info):
