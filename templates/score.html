@@ -20,10 +20,15 @@
                 seen.{% else %}Too few of their values were ones this model has
                 seen.{% endif %}</div>
           {% endif %}
+          {# Only worth saying when something is actually absent. When every column was
+               found and the VALUES were the problem, repeating the same four names under
+               a different heading reads as a form letter. #}
+          {% if schema.read|length < schema.expected|length %}
           <div class="note">This tool scores on
             {% for label,name in schema.expected %}<span class="mono">{{name}}</span>{%
               if not loop.last %}, {% endif %}{% endfor %}, plus an optional
             <span class="mono">lead_id</span>. Header case and spacing do not matter.</div>
+          {% endif %}
           {% if schema.ignored %}
             <div class="note">Columns in your file that were not recognized:
               <span class="mono">{{schema.ignored|join(', ')}}</span>.</div>

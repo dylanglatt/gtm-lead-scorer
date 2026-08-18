@@ -53,19 +53,47 @@
         <a class="btn ghost" href="/">Reset</a>
       </div>
     </form>
-    {# The upload stays a POST, then redirects to /results/<token> (Post/Redirect/Get). #}
+    {# Two ways to a board, given equal weight, because they answer different people.
+         Somebody who brought a CSV wants the upload; somebody who arrived from a link has
+         no file to hand and no reason to trust this yet, and a tool that demands one
+         before it will show anything is a wall in front of the only thing worth looking
+         at. Both are POSTs to routes that share _rank_bytes, so neither can show a board
+         the other would not.
+
+         Called the SAMPLE, never "recent". Nobody arriving here has recents, and a label
+         that implies otherwise would be a small fiction in the first thing they read.
+
+         The column list is the cheapest part of this whole change and probably the most
+         useful: preventing a mismatched upload beats explaining one afterwards. It is
+         built from FIELDS, the same list the CSV header map is built from, so it cannot
+         drift from what is actually accepted. #}
     <div class="orsep">or</div>
-    <form method="post" action="/rank" enctype="multipart/form-data" id="rankform">
-      <div class="lbl">List</div>
-      <div class="filerow">
-        <input type="file" name="csv" id="csvfile" accept=".csv" class="file-native">
-        <label class="btn ghost" for="csvfile">Choose CSV</label>
-        <span class="filename none" id="csvname">No file selected</span>
-        <button class="btn rank" type="submit" id="ranklist" disabled>Rank</button>
+    <div class="lbl">List</div>
+    <div class="two">
+      <div>
+        <form method="post" action="{{url_for('rank_sample')}}">
+          <button class="btn" type="submit">Score the sample file</button>
+        </form>
+        <p class="filehint">250 example leads that ship with the tool. One click, nothing
+          to find or download.</p>
       </div>
-      <p class="filehint">A spreadsheet with the same fields as above, plus an optional
-        <span class="mono">lead_id</span>. Extra columns are ignored, and missing ones lower
-        confidence rather than the score.</p>
-    </form>
+      <div>
+        <form method="post" action="/rank" enctype="multipart/form-data" id="rankform">
+          <div class="filerow">
+            <input type="file" name="csv" id="csvfile" accept=".csv" class="file-native">
+            <label class="btn ghost" for="csvfile">Upload your own</label>
+            <span class="filename none" id="csvname">No file selected</span>
+            <button class="btn rank" type="submit" id="ranklist" disabled>Rank</button>
+          </div>
+        </form>
+        <p class="filehint">A CSV export. Extra columns are ignored, and missing ones lower
+          confidence rather than the score.</p>
+      </div>
+    </div>
+    <p class="filehint">Columns it reads, matched by name in any case or spacing:
+      {% for f in fields %}<span class="mono">{{f.field}}</span>{% if not loop.last %},
+      {% endif %}{% endfor %}, plus an optional <span class="mono">lead_id</span>. A file
+      whose values this model has not seen is not ranked at all — it says so instead of
+      putting a made-up order in front of you.</p>
   </div>
 </details>
