@@ -74,8 +74,7 @@
         <form method="post" action="{{url_for('rank_sample')}}">
           <button class="btn" type="submit">Score the sample file</button>
         </form>
-        <p class="filehint">250 example leads that ship with the tool. One click, nothing
-          to find or download.</p>
+        <p class="filehint">250 example leads.</p>
       </div>
       <div>
         <form method="post" action="/rank" enctype="multipart/form-data" id="rankform">
@@ -86,14 +85,12 @@
             <button class="btn rank" type="submit" id="ranklist" disabled>Rank</button>
           </div>
         </form>
-        <p class="filehint">A CSV export. Extra columns are ignored, and missing ones lower
-          confidence rather than the score.</p>
+        <p class="filehint">Extra columns are ignored. Missing ones lower confidence, not
+          the score.</p>
       </div>
     </div>
-    <p class="filehint">Columns it reads, matched by name in any case or spacing:
+    <p class="filehint">Columns it reads, in any case or spacing:
       {% for f in fields %}<span class="mono">{{f.field}}</span>{% if not loop.last %},
-      {% endif %}{% endfor %}, plus an optional <span class="mono">lead_id</span>. A file
-      whose values this model has mostly not seen is not ranked at all — it says so instead of
-      putting a made-up order in front of you.</p>
+      {% endif %}{% endfor %}, plus an optional <span class="mono">lead_id</span>.</p>
   </div>
 </details>
