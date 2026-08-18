@@ -52,9 +52,9 @@ The fitted model ships in the repo (`model.joblib`), so it runs offline on a fre
 If port 5000 is taken (macOS AirPlay uses it), run `PORT=8000 python3 app.py`. The form loads
 pre-filled with an example lead, so you can click **Score** immediately or edit it first.
 
-Then click **Score the sample file** under **List** to see the ranked queue — that runs
-`demo_leads.csv`, so there is nothing to find first. `leads_messy_fixture.csv` is the other
-one worth uploading — see [What it does](#what-it-does).
+Then click **Score the sample file** under **List** to see the ranked queue.
+`leads_messy_fixture.csv` is the other one worth uploading — see
+[What it does](#what-it-does).
 
 ### Deploy it
 

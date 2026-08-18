@@ -45,8 +45,8 @@
           <input type="text" name="lead_id" value="{{one.get('lead_id','')}}"
                  placeholder="e.g. L0231" autocomplete="off"></div>
       </div>
-      <p class="filehint">Search and pick a value, or choose Unknown / Other. Unknown and
-        blank fields still score, just at lower confidence. Time zone comes from the state.</p>
+      <p class="filehint">Unknown and blank fields still score, just at lower confidence.
+        Time zone comes from the state.</p>
       <input type="hidden" name="go" value="1">   {# an all-blank lead is still a lead to score #}
       <div class="btns">
         <button class="btn" type="submit">Score</button>
