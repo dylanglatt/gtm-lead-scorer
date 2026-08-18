@@ -40,6 +40,10 @@ body{font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",Inter
 .runsum b{color:var(--ink-2)}
 .runsum .plain{color:var(--ink-2)}
 .runsum .warnnum{color:var(--flag-fg);font-weight:600}
+/* The file-level match notice. Same amber as every other flag in the tool, so a rep who
+   has learned what that colour means here does not have to learn a second vocabulary. */
+.runsum.matchnote{background:var(--flag-bg);color:var(--flag-fg);border-bottom-color:var(--flag-br)}
+.runsum.matchnote b,.runsum.matchnote .mono,.runsum.matchnote .num{color:var(--flag-fg)}
 .sumdet{display:inline-block;margin-left:var(--s1)}
 .sumdet summary{cursor:pointer;color:var(--muted);font-size:11.5px;list-style:none;
                 text-decoration:underline;text-decoration-style:dotted;text-underline-offset:2px}

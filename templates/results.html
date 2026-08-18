@@ -5,6 +5,25 @@
       <span class="hd-note">work the top first
         <span class="faintnote">(tiers set in Manager · Calibration)</span></span></div>
 
+    {# The file-level match notice. It sits ABOVE the run summary and above the board
+         because it is about whether the order below can be trusted at all, which has to
+         be read before the order is, not after. Shown only when the file is short of
+         MATCH_NOTICE; a file the model can read says nothing here. #}
+    {% if qv.match %}{% set m=qv.match %}
+      <div class="runsum matchnote">
+        <b>{{m.pct}}% of the fields this model scores on could be read in this file.</b>
+        The order below is rough — a starting point rather than a ranking.
+        {%- for label,name in m.unreadable %}<br><b>{{label}}</b> could not be read on any
+          of the <span class="num">{{m.rows_text}}</span> leads.{% endfor %}
+        {%- if m.ignored %}<br>Not recognized as columns:
+          <span class="mono">{{m.ignored|join(', ')}}</span>.{% endif %}
+        {%- if m.suggest %}<br>If <span class="mono">{{m.suggest[0]}}</span> is
+          {{m.suggest[1]}}, rename it to <span class="mono">{{m.suggest[2]}}</span> and
+          upload again.{% endif %}
+        {%- if not m.high %}<br>Not one lead scored at High confidence.{% endif %}
+      </div>
+    {% endif %}
+
     {% if qv.summary %}
       {% set s=qv.summary %}
       <div class="runsum">

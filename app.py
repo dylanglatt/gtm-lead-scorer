@@ -114,6 +114,16 @@ MATCH_NOTICE=0.80   # below this, still rank, but say the order is rough. Measur
                     # demo_leads.csv 0.98, leads_messy_fixture.csv 0.89 — the file that is
                     # broken nineteen ways on purpose keeps its board, with room to spare.
 
+# Nothing bounded row count before this: MAX_CONTENT_LENGTH caps the BYTES at 10MB, which
+# is somewhere north of 100k lead rows, and every one of them is scored, sorted, held in
+# _RESULTS and rendered. The cap is generous for the job and refuses in the same plain
+# sentence the size limit uses, rather than by running out of memory in front of a visitor.
+MAX_ROWS=100_000
+
+# The file the "score the sample" button runs. Named here rather than in the template so
+# the button and the README point at the same thing.
+SAMPLE_FILE='demo_leads.csv'
+
 # The team-wide tier cutoffs. Defaults come from meta.json via scorer; a manager moves
 # them in Manager · Calibration and every view reads from here, so one setting drives the
 # board and the single-lead verdict alike. Module-level state like _RESULTS below, and
@@ -348,7 +358,7 @@ def _ctx(**kw):
     """Everything the one template can see. Defaults first, caller's overrides second,
     then the few values that must be computed AFTER the override (cut_pct tracks whichever
     cutoffs are in play; score_pct drives the hero number)."""
-    base=dict(single=None,qv=None,cal=None,view='rep',one={},cut=APPLIED['cut'],fields=FIELDS,
+    base=dict(single=None,qv=None,cal=None,schema=None,view='rep',one={},cut=APPLIED['cut'],fields=FIELDS,
               form_fields=FORM_FIELDS,options=OPTIONS,combo=COMBO,derived_params=(),
               unknown_label=UNKNOWN_LABEL,unknown_value=UNKNOWN_VALUE,combo_label=combo_label,
               tiers=TIERS,cut_keys=CUT_KEYS,
@@ -531,29 +541,114 @@ def _summarize(res, report, n_in):
     print('[rank] '+json.dumps(s, ensure_ascii=False))
     return s
 
-@app.route('/rank', methods=['POST'])
-def rank():
-    """Post/Redirect/Get: rank the upload, stash it, then send the browser to a plain GET.
-    Nothing is ever rendered as the response to this POST."""
-    cuts=_cuts(request.form)
-    f=request.files.get('csv')
-    if not (f and f.filename):
-        return redirect(url_for('home'), code=303)
+def _match_detail(summary):
+    """The facts behind a poor match, in one shape, used by BOTH the refusal and the
+    notice — so the two can never describe the same file differently.
+
+    The distinction that makes this worth showing: a field the model could not read on
+    essentially every row is a COLUMN problem, and a rep can fix it by renaming a header.
+    A field it could not read on some rows is ordinary messy data, which the board already
+    marks per row. Only the first kind is reported here."""
+    labels={f['field']:f['label'] for f in FIELDS}
+    scored=summary['scored']
+    unreadable=[f for f,n in summary['unusable_by_field'].items()
+                if scored and n>=scored*0.9]
+    d={'pct':int(round(summary['coverage']*100)),
+       'rows':scored,
+       'rows_text':f'{scored:,}',        # prose, so it gets the separator the counts don't
+       'fields':len(scorer.KEY_FIELDS),
+       'unreadable':[(labels.get(f,f), f) for f in unreadable],
+       # Which of the scored fields we FOUND as columns, separately from which we could
+       # read. The difference is the whole diagnosis on a file like an export from another
+       # CRM: every column recognized, not one value in them familiar. Saying only "we
+       # could not read it" would leave a rep renaming headers that were already right.
+       'read':[(labels.get(f,f), f) for f in scorer.KEY_FIELDS
+               if f not in summary['missing_cols']],
+       'ignored':summary['ignored_cols'],
+       'expected':[(labels.get(f,f), f) for f in scorer.KEY_FIELDS],
+       'high':summary['confidence'].get('High',0),
+       # Whether NOTHING resolved, which is a different sentence from "not enough did".
+       # A file in another CRM's vocabulary has every column read and not one value
+       # recognized; a half-mapped file has some of both, and telling its owner none of
+       # their values were understood would be false.
+       'none_usable':summary['usable_cells']==0,
+       'suggest':None}
+    # One column we could not place and one field we could not fill is a rename, almost
+    # every time. Offered as a question, not a fact: this is a guess about intent, and
+    # this tool does not launder guesses into answers. With more than one of either, the
+    # pairing is ambiguous and nothing is suggested at all.
+    if len(unreadable)==1 and len(d['ignored'])==1:
+        d['suggest']=(d['ignored'][0], labels.get(unreadable[0],unreadable[0]), unreadable[0])
+    return d
+
+def _rank_bytes(raw, cuts):
+    """CSV bytes -> the payload results() renders. THE one path a ranked board is built
+    on: the upload and the sample button both come through here, so neither can produce a
+    board the other would not.
+
+    Three outcomes, and which one is chosen is decided here rather than in the template:
+    a file we could not read at all, a file we read but will not rank, and a board."""
     try:
-        leads,report=read_leads(f.read())
+        leads,report=read_leads(raw)
     except ValueError as e:                       # file-level: the only loud failure
-        payload={'single':{'error':f'Could not read that CSV: {e}'}}
-        token=secrets.token_urlsafe(9)
-        with _RESULTS_LOCK: _RESULTS[token]=payload
-        return redirect(url_for('results', token=token), code=303)
+        return {'single':{'error':f'Could not read that CSV: {e}'}}
+    if len(leads)>MAX_ROWS:
+        return {'single':{'error':
+            f'That file has {len(leads):,} rows and this ranks up to {MAX_ROWS:,} at a '
+            'time. Split it and rank the parts, or run the tool locally.'}}
 
     # THE contract: every input row produces an output row, carrying its reason if it
     # could not be scored. score_rows owns both rules; see it and scorer.score_leads.
     res=score_rows([lead for lead,_ in leads], cuts)
     for r,(_lead,why) in zip(res, leads): r['row_notes']=why
     res.sort(key=rank_key)                                       # ranked queue
-    payload={'queue':res,'summary':_summarize(res, report, len(leads))}
+    summary=_summarize(res, report, len(leads))
+    band=summary['band']
 
+    # The file was read and scored, and the scores are not worth showing. Every row has a
+    # number — the model always returns one — but a number computed from almost nothing is
+    # the thing this refusal exists to not put in front of a rep as a ranking. Declined
+    # through the same channel as an unreadable CSV and an oversized upload, because to
+    # the person uploading it these are all the same event: the tool said no, and why.
+    if band=='refuse':
+        d=_match_detail(summary)
+        return {'single':{'error':
+            f"That file was read, but not ranked. Of the {d['fields']} fields this model "
+            f"scores on, it could use {d['pct']}% across your {d['rows_text']} leads — too "
+            'little to put them in an order worth trusting, so it has not.'},
+                'schema':d}
+
+    payload={'queue':res,'summary':summary}
+    if band=='notice':
+        payload['match']=_match_detail(summary)
+    return payload
+
+@app.route('/rank', methods=['POST'])
+def rank():
+    """Post/Redirect/Get: rank the upload, stash it, then send the browser to a plain GET.
+    Nothing is ever rendered as the response to this POST."""
+    f=request.files.get('csv')
+    if not (f and f.filename):
+        return redirect(url_for('home'), code=303)
+    return _stash_and_redirect(_rank_bytes(f.read(), _cuts(request.form)))
+
+@app.route('/rank/sample', methods=['POST'])
+def rank_sample():
+    """Rank the file that ships with the tool, with nothing to choose and nothing to
+    upload. A visitor who has never seen this should be able to reach a real board in one
+    click; asking them to find a CSV first is a wall in front of the only thing worth
+    looking at.
+
+    A POST, not a link, because it creates a board — the same reason /rank is a POST — and
+    it goes through _rank_bytes, so this and uploading the same file cannot diverge."""
+    with open(os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                           SAMPLE_FILE), 'rb') as fh:
+        return _stash_and_redirect(_rank_bytes(fh.read(), _cuts(request.form)))
+
+def _stash_and_redirect(payload):
+    """Hold the payload under a one-shot token and send the browser to the plain GET.
+    Every board-creating route ends here, so Post/Redirect/Get is one line, not a habit
+    each route has to remember."""
     token=secrets.token_urlsafe(9)
     with _RESULTS_LOCK:
         _RESULTS[token]=payload
@@ -647,6 +742,7 @@ def results(token):
 
     tiers,confs=_chips(rows, tier, conf)
     qv=dict(rows=pagerows, tier=tier, conf=conf, q=q, tier_chips=tiers, conf_chips=confs,
+            match=payload.get('match'),
             total=len(rows), matching=len(sel), page=page, npages=npages, per=per,
             sizes=PAGE_SIZES, first=start+1, last=start+len(pagerows), link=link, token=token,
             filtered=(tier!='all' or conf!='all' or bool(q)), summary=payload.get('summary'),

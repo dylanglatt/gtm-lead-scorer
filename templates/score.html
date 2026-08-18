@@ -8,6 +8,35 @@
         <div class="flag">{{r['error']}}</div>
         {% for n in r.get('normalized',[]) %}<div class="note">Read as: {{n}}</div>{% endfor %}
         {% for f in r.get('flags',[]) %}<div class="flag">{{f}}</div>{% endfor %}
+        {# Present only when a file was declined for not matching the model. Naming the
+             columns is the whole point: "we could not read it" is a dead end, and the
+             difference between that and a fix is knowing which header to change. #}
+        {% if schema %}
+          {% if schema.read %}
+            <div class="note">Columns read from your file:
+              {% for label,name in schema.read %}<span class="mono">{{name}}</span>{%
+                if not loop.last %}, {% endif %}{% endfor %}.
+              {% if schema.none_usable %}The values in them were not ones this model has
+                seen.{% else %}Too few of their values were ones this model has
+                seen.{% endif %}</div>
+          {% endif %}
+          <div class="note">This tool scores on
+            {% for label,name in schema.expected %}<span class="mono">{{name}}</span>{%
+              if not loop.last %}, {% endif %}{% endfor %}, plus an optional
+            <span class="mono">lead_id</span>. Header case and spacing do not matter.</div>
+          {% if schema.ignored %}
+            <div class="note">Columns in your file that were not recognized:
+              <span class="mono">{{schema.ignored|join(', ')}}</span>.</div>
+          {% endif %}
+          {% if schema.suggest %}
+            <div class="note">If <span class="mono">{{schema.suggest[0]}}</span> is
+              {{schema.suggest[1]}}, rename it to
+              <span class="mono">{{schema.suggest[2]}}</span> and upload again.</div>
+          {% endif %}
+          <form method="post" action="{{url_for('rank_sample')}}" class="btns">
+            <button class="btn" type="submit">Score the sample file instead</button>
+          </form>
+        {% endif %}
       </div>
     </div>
   {% else %}
