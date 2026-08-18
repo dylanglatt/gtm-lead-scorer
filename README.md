@@ -40,7 +40,7 @@ real-world input.
 
 ## Run it
 
-**Live demo:** _(add the URL here after deploying)_
+**Live demo:** https://gtm-lead-scorer.onrender.com (click **Score the sample file** to see a ranked queue with nothing to download)
 
 ```
 pip install -r requirements.txt
@@ -101,6 +101,9 @@ is refused rather than ranked. `test_export_golden.py` holds the exported bytes 
   it declines to rank the file at all and names the columns it read, the ones it ignored, and
   the ones it scores on. A confident-looking queue built out of values the model never saw is
   worse than no queue.
+
+The edges of that check, and three other things worth knowing before you trust this, are
+written down in [docs/known-issues.md](docs/known-issues.md).
 
 ![A file the model can only half read](docs/mismatch.png)
 
