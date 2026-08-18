@@ -94,11 +94,38 @@ PY
 
 Same score, alphabetical order, presented as a queue.
 
-## 4. The row cap has no test
+## 4. The row cap is tested as a branch, never at its real size
 
-`MAX_ROWS = 100_000` in `app.py` refuses an oversized file before scoring it. Every other
-refusal path in the tool has a test; this one does not. The honest test builds a
-100,000-row file, and the cheap one patches the constant down and proves less than it
-appears to.
+`MAX_ROWS = 100_000` in `app.py` refuses an oversized file before scoring it, and
+`test_a_file_with_too_many_rows_is_refused_before_it_is_scored` covers it — by patching the
+cap down to 2 and uploading `demo_leads.csv`. That proves the branch fires, that the
+comparison is the right way round, and that the message and the sample-file button render.
 
-It has been exercised by hand and not by CI, so it can regress silently.
+It proves nothing about 100,000 rows, because no file that size has ever been through this.
+What is untested is whether an upload just under the cap parses, scores, sorts, stores and
+renders inside the memory and the request time a 512MB instance running one worker and
+eight threads actually has. The number was chosen as one that sounded safe, not as one
+measured against the box.
+
+To find out, build one and watch it:
+
+```
+python3 - <<'PY'
+import csv, itertools, os
+src = list(csv.DictReader(open('demo_leads.csv', newline='', encoding='utf-8')))
+with open('/tmp/big.csv', 'w', newline='', encoding='utf-8') as fh:
+    w = csv.DictWriter(fh, fieldnames=src[0].keys())
+    w.writeheader()
+    for i, row in enumerate(itertools.islice(itertools.cycle(src), 99_000)):
+        w.writerow(dict(row, lead_id=f'B-{i:06d}'))
+print(os.path.getsize('/tmp/big.csv') / 1e6, 'MB')
+PY
+```
+
+Then upload `/tmp/big.csv` and watch the resident memory of the server process.
+
+That file comes out at 7.0MB, which clears `MAX_CONTENT_LENGTH` — the 10MB body limit —
+with room to spare. A wider export would not: the same 99,000 rows with a dozen extra
+columns hits the size limit long before the row cap, and the two bounds have never been
+set against each other. Whichever one a real upload meets first is currently an accident
+of how many columns the CRM exports.
