@@ -364,6 +364,7 @@ def _ctx(**kw):
     then the few values that must be computed AFTER the override (cut_pct tracks whichever
     cutoffs are in play; score_pct drives the hero number)."""
     base=dict(single=None,qv=None,cal=None,schema=None,summary=None,declined=None,
+              offer_sample=False,
               view='rep',one={},cut=APPLIED['cut'],fields=FIELDS,
               form_fields=FORM_FIELDS,options=OPTIONS,combo=COMBO,derived_params=(),
               unknown_label=UNKNOWN_LABEL,unknown_value=UNKNOWN_VALUE,combo_label=combo_label,
@@ -599,6 +600,16 @@ def _match_detail(summary):
         d['suggest']=(d['ignored'][0], labels.get(unreadable[0],unreadable[0]), unreadable[0])
     return d
 
+def _decline(message, **extra):
+    """A file we will not rank, in the shape results() renders.
+
+    EVERY refusal is built here so the way out cannot be left off one of them. It was:
+    the sample-file button hung off the schema detail, which only the vocabulary-mismatch
+    refusal carries, so an unreadable CSV, an empty one, a header with no rows and an
+    oversized upload all ended at a dead end with nothing to click. A refusal that leaves
+    somebody stuck is half a refusal."""
+    return dict(single={'error':message}, offer_sample=True, **extra)
+
 def _rank_bytes(raw, cuts):
     """CSV bytes -> the payload results() renders. THE one path a ranked board is built
     on: the upload and the sample button both come through here, so neither can produce a
@@ -609,11 +620,11 @@ def _rank_bytes(raw, cuts):
     try:
         leads,report=read_leads(raw)
     except ValueError as e:                       # file-level: the only loud failure
-        return {'single':{'error':f'Could not read that CSV: {e}'}}
+        return _decline(f'Could not read that CSV: {e}')
     if len(leads)>MAX_ROWS:
-        return {'single':{'error':
+        return _decline(
             f'That file has {len(leads):,} rows and this ranks up to {MAX_ROWS:,} at a '
-            'time. Split it and rank the parts, or run the tool locally.'}}
+            'time. Split it and rank the parts, or run the tool locally.')
 
     # THE contract: every input row produces an output row, carrying its reason if it
     # could not be scored. score_rows owns both rules; see it and scorer.score_leads.
@@ -637,17 +648,17 @@ def _rank_bytes(raw, cuts):
         leads='lead' if d['rows']==1 else 'leads'
         across=(f"across your {d['rows_text']} {leads}" if not d['failed']
                 else f"across the {d['rows_text']} {leads} it could score at all")
-        return {'single':{'error':
+        return _decline(
             f"That file was read, but not ranked. Of the {d['fields']} fields this model "
             f"scores on, it could use {d['pct']}% {across} — too little to put them in an "
-            'order worth trusting, so it has not.'},
-                'schema':d,
-                # The ranking is withheld; the ROWS are not. score_rows' contract is that
-                # a row which could not be scored still ships carrying its reason, and a
-                # refusal that swallowed those rows would break it one level up — the page
-                # would be the only place a lead ever disappeared.
-                'summary':summary,
-                'declined':[r for r in res if r.get('error')][:DECLINED_SHOWN]}
+            'order worth trusting, so it has not.',
+            schema=d,
+            # The ranking is withheld; the ROWS are not. score_rows' contract is that a
+            # row which could not be scored still ships carrying its reason, and a refusal
+            # that swallowed those rows would break it one level up — the page would be
+            # the only place a lead ever disappeared.
+            summary=summary,
+            declined=[r for r in res if r.get('error')][:DECLINED_SHOWN])
 
     payload={'queue':res,'summary':summary}
     if band=='notice':

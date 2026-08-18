@@ -114,6 +114,25 @@ def test_a_file_the_model_cannot_read_is_not_ranked(client, name):
     assert 'Score the sample file' in html
 
 
+@pytest.mark.parametrize('raw,why', [
+    (b'widget_id,colour,sprocket\nW-1,red,12\n', 'no recognizable columns'),
+    (b'', 'an empty file'),
+    (b'lead_id,channel\n', 'a header with no rows'),
+])
+def test_every_refusal_offers_the_sample_file(client, raw, why):
+    """The way out has to be on ALL of them, not just the one that measures coverage.
+
+    csv_io.read_leads refuses three files at the file level before the match check ever
+    runs, and the sample button used to hang off the schema detail — which only the
+    vocabulary-mismatch refusal carries. So these three ended at a dead end with nothing
+    to click, which is the state most likely to make somebody close the tab."""
+    html = upload(client, raw)
+    assert not has_board(html), f'{why} should not produce a board'
+    assert 'Could not read that CSV' in html, f'{why} lost its message'
+    assert 'Score the sample file' in html, f'{why} left the visitor with nowhere to go'
+    assert '/rank/sample' in html
+
+
 def test_the_refusal_offers_the_sample_file_as_a_way_out(client):
     html = upload(client, fixture('foreign_vocabulary.csv'))
     assert app.url_for.__name__  # sanity: url_for is what the template used
@@ -189,6 +208,7 @@ def test_a_file_with_too_many_rows_is_refused_before_it_is_scored(client, monkey
     html = upload(client, repo_file('demo_leads.csv'))
     assert not has_board(html)
     assert 'ranks up to 2 at a time' in html
+    assert 'Score the sample file' in html
 
 
 # ---------------------------------------------------------------------------

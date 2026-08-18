@@ -67,7 +67,9 @@
             {% endif %}
           </div>
         {% endif %}
-        {% if schema %}
+        {# On EVERY refusal, not only the one that carries a schema detail. An
+             unreadable CSV and an oversized one are dead ends without it. #}
+        {% if offer_sample %}
           <form method="post" action="{{url_for('rank_sample')}}" class="btns">
             <button class="btn" type="submit">Score the sample file instead</button>
           </form>
