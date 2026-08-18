@@ -18,7 +18,10 @@ services:
   - type: web
     name: gtm-lead-scorer
     runtime: python
-    plan: free
+    # Paid tier on purpose: free spins down after ~15 minutes idle and answers the
+    # next click with a 30-50 second cold start. The link is being sent to people
+    # who will open it once. Dropping to free is a behavior change, not a cleanup.
+    plan: starter
     buildCommand: pip install -r requirements.txt
     startCommand: gunicorn app:app --bind 0.0.0.0:$PORT --workers 1 --threads 8 --timeout 120
     # The route exists for exactly this: a health check that never touches the model.
