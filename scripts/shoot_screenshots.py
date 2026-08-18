@@ -1,4 +1,4 @@
-"""Regenerates the two screenshots in docs/, so they are reproducible rather than
+"""Regenerates the screenshots in docs/, so they are reproducible rather than
 hand-captured and cannot quietly go stale when the data or the UI changes.
 
     pip install -r requirements-dev.txt
@@ -14,10 +14,12 @@ viewport the existing images use, and writes:
   docs/verdict.png  one lead with the full why panel — the lead the board just put first,
                     looked up from the file by the id on screen, so the two images are
                     always the same run of the same data.
+  docs/mismatch.png the same board for a file whose schema the model only half matches,
+                    framed on what the tool says about it rather than on the ranking.
 
-Both are CLIPPED, not full-page. A full-page shot of 250 ranked leads is a thumbnail of a
-table nobody can read; the frame is cut at a row boundary instead, which is what makes the
-top of the queue legible at the size GitHub renders it."""
+All three are CLIPPED, not full-page. A full-page shot of 250 ranked leads is a thumbnail
+of a table nobody can read; the frame is cut at a row boundary instead, which is what makes
+the top of the queue legible at the size GitHub renders it."""
 import csv
 import os
 import socket
@@ -34,6 +36,10 @@ _HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.dirname(_HERE)
 DOCS = os.path.join(ROOT, 'docs')
 DEMO = os.path.join(ROOT, 'demo_leads.csv')
+# A file the model can only half read: correct in every way except that its revenue column
+# is named contractor_annual_revenue, so that column is ignored and every lead scores one
+# field short. The shot of what the tool says about it is the point of the third image.
+MISMATCH = os.path.join(ROOT, 'tests', 'fixtures', 'hearth_repro.csv')
 
 VIEWPORT = 1400
 ROWS_PAST_HOT = 5           # how far past the last Hot lead the hero image keeps going
@@ -134,6 +140,20 @@ def shoot(page, base):
     score = page.locator('#verdict').get_attribute('data-score')
     tier = page.locator('#v-tier').inner_text()
     print(f'docs/verdict.png {top_id}: {score}% win chance, {tier}')
+
+    # --- the mismatch notice ---------------------------------------------------
+    page.goto(base + '/', wait_until='networkidle')
+    page.locator('#csvfile').set_input_files(MISMATCH)
+    page.locator('#ranklist').click()
+    page.wait_for_url(f'{base}/results/**')
+    page.wait_for_selector('.matchnote')
+    mismatch = os.path.join(DOCS, 'mismatch.png')
+    # Only a few rows: the subject is the banner, and a long queue under it would read as
+    # the subject instead. Enough of the board to show it did still rank.
+    page.screenshot(path=mismatch, full_page=True,
+                    clip=_clip_to(page, 'table tbody tr', 5))
+    said = page.locator('.matchnote').inner_text().split('\n')[0]
+    print(f'docs/mismatch.png {said}')
 
 
 def main():

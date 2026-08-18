@@ -52,8 +52,9 @@ The fitted model ships in the repo (`model.joblib`), so it runs offline on a fre
 If port 5000 is taken (macOS AirPlay uses it), run `PORT=8000 python3 app.py`. The form loads
 pre-filled with an example lead, so you can click **Score** immediately or edit it first.
 
-Then upload **`demo_leads.csv`** (250 clean leads) under **List → Rank** to see the ranked
-queue. `leads_messy_fixture.csv` is the other one to try — see [What it does](#what-it-does).
+Then click **Score the sample file** under **List** to see the ranked queue — that runs
+`demo_leads.csv`, so there is nothing to find first. `leads_messy_fixture.csv` is the other
+one worth uploading — see [What it does](#what-it-does).
 
 ### Deploy it
 
@@ -81,7 +82,9 @@ pytest
 
 Covers the parity between the typed and uploaded paths (the same lead has to score the same
 either way — it did not, once), ingestion of the messy fixture, what an unrecognized value is
-allowed to change, and that junk sinks instead of ranking.
+allowed to change, that junk sinks instead of ranking, and that a file the model cannot read
+is refused rather than ranked. `test_export_golden.py` holds the exported bytes for
+`demo_leads.csv` fixed, so a change to anything else cannot quietly move a score.
 
 ## What it does
 
@@ -93,6 +96,18 @@ allowed to change, and that junk sinks instead of ranking.
 - **Confidence** — High / Medium / Low, with a flag for every missing or unrecognized field.
 - **Messy input is safe** — bad rows are flagged and ranked low, never crash the tool or sneak
   to the top.
+- **It says when it can't** — the model only knows the vocabulary it was fit on. If too few of
+  a file's values are ones it has seen, the page says so above the board; if almost none are,
+  it declines to rank the file at all and names the columns it read, the ones it ignored, and
+  the ones it scores on. A confident-looking queue built out of values the model never saw is
+  worse than no queue.
+
+![A file the model can only half read](docs/mismatch.png)
+
+*The failure that prompted this: an export identical to the training schema except that its
+revenue column is named `contractor_annual_revenue`. That column is ignored, so every lead is
+scored one field short. It still ranks — but the page says how much of the file it could read,
+which field it could not, and what to rename.*
 
 Two files ship for trying it under **List → Rank**:
 
@@ -142,5 +157,7 @@ within three points of the figures they replaced.
 - `model.joblib`, `meta.json` — the fitted model and its metadata
 - `make_synthetic_data.py` / `train_and_save.py` — the data generator and the training run
 - `test_scorer.py` — the test suite
-- `scripts/shoot_screenshots.py` — regenerates the two images above
+- `test_schema_match.py` / `test_schema_guard.py` — the file-level match check and what it does
+- `scripts/shoot_screenshots.py` — regenerates the images above
+- `scripts/make_test_fixtures.py` — regenerates the CSV fixtures the tests read
 - `Procfile` / `render.yaml` / `Dockerfile` — the three ways to deploy it

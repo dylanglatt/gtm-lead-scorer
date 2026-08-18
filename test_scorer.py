@@ -159,7 +159,16 @@ def test_the_fixtures_expectations_column_holds():
 
 
 def test_a_file_of_junk_still_answers():
-    """Not a crash and not an empty page: every row comes back carrying its reason."""
+    """The ENGINE answers: every row comes back carrying its reason, nothing crashes.
+
+    The docstring used to say "not an empty page" as well, and that half is no longer
+    true. This file measures 0.00 usable cells, so /rank now declines to draw a board out
+    of these answers — test_schema_guard.py covers that, and
+    test_the_engine_still_answers_for_a_file_the_route_declines pins the two halves
+    together. Both are deliberate: the scorer's contract is that every row gets a result,
+    and the product's contract is that a result built from nothing is not shown as a
+    ranking. This test is about the first one, which has not changed.
+    """
     results = _rank([{'lead_id': 'J-1', 'channel': '', 'icp': '', 'revenue': '',
                       'utm': '', 'legacy': 'inf', 'state': 'Banana'}])
     assert len(results) == 1
