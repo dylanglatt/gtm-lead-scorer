@@ -75,6 +75,45 @@ CONF_KEYS=[c.lower() for c in scorer.CONF_LEVELS]
 PAGE_SIZES=[25,50,100]
 PAGE_SIZE=50                        # default rows per page; the rep can pick from PAGE_SIZES
 
+# ---------------------------------------------------------------------------
+# HOW WELL AN UPLOAD MATCHES THE MODEL, and what to do when it does not.
+#
+# scorer.normalize_category states the rule this file needs: flag what we do not know,
+# never guess. That rule runs per VALUE. It was missing per FILE, and the gap showed:
+# an export whose revenue column is named contractor_annual_revenue has that column
+# ignored by the header map, so every row is missing one field, every row still scores,
+# and the board comes back tiered and confident with nothing on the page to say why the
+# top lead is a 51%. handle_unknown='ignore' means an unfamiliar value contributes zero
+# rather than raising — deliberate, and documented in scorer.py — but zero times a whole
+# column is a board built out of the intercept.
+#
+# The measure is USABLE CELLS: over the rows that scored, how many of the four
+# scorer.KEY_FIELDS the model could actually read, out of all of them.
+#
+#   coverage = usable cells / (scored rows x len(scorer.KEY_FIELDS))
+#
+# A cell is unusable when the column is absent, the value is blank, or the value is not
+# one the model was fit on. That is exactly what scorer._unusable already decides per row,
+# so this counts what the scorer already said rather than deciding it a second time.
+#
+# THE THING THAT MAKES IT WORK is counting an ABSENT COLUMN as unusable on every row. The
+# obvious metric — what share of the values we did see were recognized — cannot see a
+# missing column at all, because a column that is not there contributes no values to
+# judge. On the export above that metric reads 0.879 and calls the file fine. This one
+# reads 0.75 and says the revenue column was not read.
+#
+# Values pooled by the encoder's min_frequency=20 count as USABLE. Pooling is not
+# dropping: those values share one fitted coefficient, so they carry a real if coarse
+# signal, unlike an unknown value which contributes literally nothing. Counting them
+# against a file would penalise it for containing exactly the CRM artefacts the model was
+# trained on — it drops a correctly-mapped export from 0.99 to 0.89 for no reason.
+MATCH_REFUSE=0.35   # below this the model is ranking its own intercept, so do not rank at
+                    # all. Measured: a file in a foreign vocabulary scores 0.00, one with
+                    # a single usable field 0.25, and nothing real lands in 0.25-0.75.
+MATCH_NOTICE=0.80   # below this, still rank, but say the order is rough. Measured:
+                    # demo_leads.csv 0.98, leads_messy_fixture.csv 0.89 — the file that is
+                    # broken nineteen ways on purpose keeps its board, with room to spare.
+
 # The team-wide tier cutoffs. Defaults come from meta.json via scorer; a manager moves
 # them in Manager · Calibration and every view reads from here, so one setting drives the
 # board and the single-lead verdict alike. Module-level state like _RESULTS below, and
@@ -443,6 +482,13 @@ def rank_key(r):
             _CONF_RANK.get(r.get('confidence'), len(_CONF_RANK)),
             str(r.get('lead_id') or ''))
 
+def match_band(coverage):
+    """coverage -> 'ok' | 'notice' | 'refuse'. The only place the two constants are read,
+    so the thresholds cannot be applied one way on the board and another in a message."""
+    if coverage>=MATCH_NOTICE: return 'ok'
+    if coverage>=MATCH_REFUSE: return 'notice'
+    return 'refuse'
+
 def _summarize(res, report, n_in):
     """N in / N scored / N flagged by type / confidence split — printed to the console and
     shown above the ranked list, so a messy run is legible without reading rows.
@@ -460,13 +506,28 @@ def _summarize(res, report, n_in):
     # and forcing them to add up would make one of the two sentences a lie.
     bad=sum(1 for r in res if any(_flag_severity(f)==BAD for f in _row_flags(r)))
     missing=sum(1 for r in res if any(_flag_severity(f)==MISSING for f in _row_flags(r)))
+    # How much of this FILE the model could read, from what the scorer already decided per
+    # row. See MATCH_REFUSE above for the measure and why it is cells rather than values.
+    # Only scored rows count: a row that failed carries no 'unusable' list to add up.
+    scored=[r for r in res if not r.get('error')]
+    total_cells=len(scored)*len(scorer.KEY_FIELDS)
+    by_field=collections.Counter(f for r in scored for f in r.get('unusable',())
+                                 if f in scorer.KEY_FIELDS)
+    usable_cells=total_cells-sum(by_field.values())
+    # No cells at all — every row failed, or every key field was blank on every row — is
+    # not a divide-by-zero and not a pass. There is nothing here to rank, so it reads as
+    # the worst possible match rather than as an undefined one.
+    coverage=(usable_cells/total_cells) if total_cells else 0.0
     s={'rows_in':n_in,'scored':sum(1 for r in res if not r.get('error')),
        'failed':sum(1 for r in res if r.get('error')),'blank_skipped':report['blank'],
        'flagged':sum(1 for r in res if _row_flags(r)),
        'bad_value':bad,'missing_field':missing,
        'by_kind':dict(kinds.most_common()),
        'confidence':{c:conf.get(c,0) for c in scorer.CONF_LEVELS},
-       'missing_cols':report['missing_cols'],'ignored_cols':report['ignored_cols']}
+       'missing_cols':report['missing_cols'],'ignored_cols':report['ignored_cols'],
+       'coverage':round(coverage,4),'band':match_band(coverage),
+       'usable_cells':usable_cells,'total_cells':total_cells,
+       'unusable_by_field':dict(by_field.most_common())}
     print('[rank] '+json.dumps(s, ensure_ascii=False))
     return s
 

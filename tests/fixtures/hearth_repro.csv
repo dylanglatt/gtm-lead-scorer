@@ -1,0 +1,1201 @@
+lead_id,channel,icp_category,contractor_annual_revenue,utm_medium,time_zone,legacy_score,state
+H-00001,bing,Ideal,"$250,000 to $499,999",rd,Central,75,IL
+H-00002,google,High Value,"$500,000 to $999,999",nonbrand,Pacific,61,OR
+H-00003,google,Low Value,"$5,000,000 to $9,999,999",brand,Eastern,42,FL
+H-00004,google,Low Value,"$500,000 to $999,999",rd,Pacific,9,CA
+H-00005,google,Low Value,"$250,000 to $499,999",rd,Arizona,37,AZ
+H-00006,meta,Low Value,"Less than $250,000",nonbrand,,39,
+H-00007,tiktok,Low Value,"$250,000 to $499,999",rd,Central,32,IL
+H-00008,meta,Low Value,"$1,000,000 to $4,999,999",rd,Pacific,100,CA
+H-00009,bing,Low Value,"Less than $250,000",nonbrand,Pacific,78,CA
+H-00010,google,High Value,"$10,000,000 to $24,999,999",cpc,,100,
+H-00011,meta,Low Value,"Less than $250,000",organic social,Eastern,50,MA
+H-00012,google,Ideal,"$1,000,000 to $4,999,999",ppc,Alaska,73,AK
+H-00013,google,Low Value,"Less than $250,000",brand,Eastern,33,FL
+H-00014,google,Ideal,"$500,000 to $999,999",rd,Eastern,24,NC
+H-00015,google,Ideal,"$250,000 to $499,999",rd,Eastern,,
+H-00016,meta,Low Value,"$500,000 to $999,999",organic social,Eastern,54,MA
+H-00017,tiktok,Low Value,"$250,000 to $499,999",organic social,Central,22,TN
+H-00018,meta,Low Value,"Less than $250,000",prospecting,Eastern,16,GA
+H-00019,tiktok,Ideal,"Less than $250,000",prospecting,Eastern,76,GA
+H-00020,google,High Value,"$250,000 to $499,999",brand,Central,67,IL
+H-00021,tiktok,Low Value,"Less than $250,000",retargeting,Central,0,TX
+H-00022,google,High Value,"$10,000,000 to $24,999,999",rd,Eastern,64,VA
+H-00023,bing,High Value,"$500,000 to $999,999",brand,Central,34,TX
+H-00024,google,Low Value,"$10,000,000 to $24,999,999",brand,Mountain,22,UT
+H-00025,bing,Low Value,"Less than $250,000",rd,Mountain,53,MT
+H-00026,meta,Ideal,"$250,000 to $499,999",prospecting,Eastern,65,FL
+H-00027,meta,Ideal,"Less than $250,000",rd,Eastern,39,NY
+H-00028,google,High Value,"$10,000,000 to $24,999,999",brand,Pacific,100,CA
+H-00029,google,Low Value,,brand,Pacific,84,CA
+H-00030,meta,High Value,"Less than $250,000",rd,,,
+H-00031,tiktok,High Value,"$250,000 to $499,999",retargeting,Eastern,54,NY
+H-00032,meta,Low Value,"Less than $250,000",rd,Arizona,43,AZ
+H-00033,bing,Ideal,"$250,000 to $499,999",rd,Eastern,57,FL
+H-00034,google,Low Value,"Less than $250,000",nonbrand,Pacific,40,OR
+H-00035,google,Low Value,"$250,000 to $499,999",paid search,Mountain,17,CO
+H-00036,google,High Value,"$500,000 to $999,999",rd,Eastern,75,NY
+H-00037,google,Ideal,"$250,000 to $499,999",paid search,Eastern,17,NY
+H-00038,meta,High Value,"$5,000,000 to $9,999,999",rd,Central,48,IL
+H-00039,google,Low Value,"$5,000,000 to $9,999,999",paid search,Pacific,75,WA
+H-00040,tiktok,High Value,"$500,000 to $999,999",rd,Pacific,39,CA
+H-00041,google,Ideal,"$1,000,000 to $4,999,999",rd,Central,0,IL
+H-00042,google,High Value,,rd,Central,62,TX
+H-00043,meta,Unknown,"Less than $250,000",rd,Eastern,3,MA
+H-00044,google,Ideal,"$1,000,000 to $4,999,999",cpc,Pacific,100,CA
+H-00045,tiktok,Low Value,"Less than $250,000",prospecting,Pacific,10,CA
+H-00046,meta,Low Value,Self-Serve Signup,prospecting,Eastern,0,FL
+H-00047,meta,Unknown,"$250,000 to $499,999",rd,Eastern,89,FL
+H-00048,meta,Low Value,"$250,000 to $499,999",rd,Pacific,64,WA
+H-00049,bing,Low Value,"Less than $250,000",rd,Eastern,69,NY
+H-00050,meta,High Value,"$500,000 to $999,999",prospecting,Central,86,MO
+H-00051,tiktok,Low Value,Self-Serve Signup,organic social,Central,34,TX
+H-00052,google,High Value,"$500,000 to $999,999",prospecting,Eastern,46,FL
+H-00053,tiktok,Unknown,"Less than $250,000",rd,Pacific,36,WA
+H-00054,bing,High Value,"$10,000,000 to $24,999,999",rd,Eastern,87,MA
+H-00055,google,High Value,"$250,000 to $499,999",pmax,Central,22,MO
+H-00056,google,Ideal,"Less than $250,000",paid search,Pacific,35,CA
+H-00057,meta,High Value,"Less than $250,000",rd,Central,42,IL
+H-00058,google,High Value,"$250,000 to $499,999",rd,Central,100,LA
+H-00059,bing,High Value,"Less than $250,000",rd,Pacific,72,CA
+H-00060,meta,Unknown,"Less than $250,000",rd,Central,3,TN
+H-00061,bing,Ideal,"Less than $250,000",rd,Central,25,MN
+H-00062,google,Low Value,"Less than $250,000",paid search,Pacific,38,CA
+H-00063,bing,Low Value,"Less than $250,000",organic search,Eastern,50,FL
+H-00064,google,Low Value,"Less than $250,000",rd,Eastern,0,NJ
+H-00065,meta,Ideal,"$500,000 to $999,999",brand,Alaska,42,AK
+H-00066,meta,Low Value,"Less than $250,000",rd,Pacific,52,NV
+H-00067,meta,Low Value,"$1,000,000 to $4,999,999",rd,Pacific,18,CA
+H-00068,tiktok,Low Value,"$1,000,000 to $4,999,999",organic social,Pacific,,CA
+H-00069,google,Low Value,"Less than $250,000",paid search,Eastern,40,NJ
+H-00070,google,Ideal,"Less than $250,000",rd,Eastern,43,GA
+H-00071,google,Low Value,"Less than $250,000",brand,Arizona,73,AZ
+H-00072,google,Low Value,"Less than $250,000",rd,Central,76,
+H-00073,meta,Low Value,Self-Serve Signup,rd,Central,0,TN
+H-00074,google,Low Value,"Less than $250,000",rd,Eastern,,GA
+H-00075,google,Low Value,"$5,000,000 to $9,999,999",rd,Mountain,21,CO
+H-00076,google,Low Value,"Less than $250,000",brand,Eastern,59,NY
+H-00077,google,Ideal,"$1,000,000 to $4,999,999",cpc,Eastern,61,PA
+H-00078,google,Low Value,"$500,000 to $999,999",paid search,Eastern,,NC
+H-00079,meta,High Value,"$250,000 to $499,999",rd,Mountain,57,CO
+H-00080,tiktok,Low Value,Self-Serve Signup,rd,Mountain,23,CO
+H-00081,google,Ideal,"$500,000 to $999,999",rd,Central,65,IL
+H-00082,meta,Ideal,"$500,000 to $999,999",retargeting,Eastern,70,NC
+H-00083,google,Ideal,"$1,000,000 to $4,999,999",paid search,Central,22,TN
+H-00084,meta,Low Value,"Less than $250,000",rd,Pacific,0,CA
+H-00085,bing,Ideal,,ppc,Eastern,55,FL
+H-00086,meta,Low Value,"Less than $250,000",rd,Central,2,WI
+H-00087,meta,Low Value,,prospecting,Eastern,39,NY
+H-00088,meta,Ideal,"Less than $250,000",rd,Central,99,WI
+H-00089,google,Low Value,"$250,000 to $499,999",rd,Eastern,27,NJ
+H-00090,tiktok,Ideal,"$1,000,000 to $4,999,999",prospecting,Eastern,67,NC
+H-00091,meta,Low Value,"Less than $250,000",rd,Eastern,43,VA
+H-00092,google,Unknown,"$250,000 to $499,999",pmax,Pacific,88,NV
+H-00093,tiktok,High Value,"$10,000,000 to $24,999,999",cpc,Eastern,100,MI
+H-00094,google,Ideal,"Less than $250,000",brand,Central,71,WI
+H-00095,google,Low Value,"Less than $250,000",nonbrand,Pacific,41,OR
+H-00096,tiktok,Ideal,"$250,000 to $499,999",organic social,Pacific,96,CA
+H-00097,bing,High Value,"$1,000,000 to $4,999,999",ppc,Eastern,89,PA
+H-00098,google,Ideal,"$5,000,000 to $9,999,999",nonbrand,Pacific,36,OR
+H-00099,meta,Ideal,"$500,000 to $999,999",rd,Pacific,100,WA
+H-00100,meta,Low Value,"$250,000 to $499,999",organic social,Eastern,0,FL
+H-00101,tiktok,Unknown,"$5,000,000 to $9,999,999",rd,Eastern,37,FL
+H-00102,bing,Low Value,"$1,000,000 to $4,999,999",nonbrand,Mountain,29,CO
+H-00103,meta,Low Value,"$250,000 to $499,999",organic social,Pacific,75,
+H-00104,google,High Value,"Less than $250,000",brand,Eastern,75,NC
+H-00105,meta,High Value,"$1,000,000 to $4,999,999",brand,Central,62,WI
+H-00106,tiktok,Unknown,"Less than $250,000",rd,Central,48,IL
+H-00107,meta,Low Value,"$500,000 to $999,999",rd,Central,55,LA
+H-00108,google,High Value,"Less than $250,000",rd,Eastern,96,PA
+H-00109,google,Ideal,"$500,000 to $999,999",paid search,Pacific,33,WA
+H-00110,google,Ideal,"$500,000 to $999,999",rd,,89,
+H-00111,google,High Value,"$1,000,000 to $4,999,999",rd,,,
+H-00112,tiktok,High Value,"$250,000 to $499,999",rd,Pacific,43,NV
+H-00113,tiktok,Ideal,"$5,000,000 to $9,999,999",rd,Pacific,59,WA
+H-00114,meta,Low Value,"$1,000,000 to $4,999,999",prospecting,Eastern,4,
+H-00115,meta,Low Value,"$500,000 to $999,999",organic social,Pacific,100,OR
+H-00116,google,Unknown,"$250,000 to $499,999",rd,Central,21,TX
+H-00117,google,High Value,"$5,000,000 to $9,999,999",organic search,Eastern,76,NY
+H-00118,google,Unknown,"$5,000,000 to $9,999,999",rd,Eastern,45,PA
+H-00119,meta,Low Value,"Less than $250,000",retargeting,Eastern,25,NJ
+H-00120,meta,Low Value,"Less than $250,000",rd,Pacific,21,CA
+H-00121,google,Low Value,"$250,000 to $499,999",rd,,85,
+H-00122,google,High Value,,rd,,64,
+H-00123,google,Low Value,"Less than $250,000",organic search,Central,66,IL
+H-00124,meta,Low Value,"$500,000 to $999,999",retargeting,Central,46,MN
+H-00125,google,Low Value,"$250,000 to $499,999",rd,Eastern,66,NC
+H-00126,meta,Ideal,"$250,000 to $499,999",retargeting,Pacific,60,CA
+H-00127,tiktok,Low Value,"$250,000 to $499,999",rd,Pacific,23,WA
+H-00128,meta,High Value,"$1,000,000 to $4,999,999",rd,Central,47,MO
+H-00129,google,High Value,"$250,000 to $499,999",rd,Eastern,56,FL
+H-00130,meta,Low Value,"$250,000 to $499,999",prospecting,,67,
+H-00131,tiktok,Low Value,"Less than $250,000",organic search,Eastern,,FL
+H-00132,google,Unknown,"$250,000 to $499,999",rd,Eastern,66,NC
+H-00133,google,Low Value,"Less than $250,000",rd,Mountain,66,UT
+H-00134,google,Low Value,"$250,000 to $499,999",organic search,,86,
+H-00135,bing,Low Value,"$1,000,000 to $4,999,999",brand,,100,
+H-00136,meta,Low Value,"Less than $250,000",prospecting,Pacific,44,CA
+H-00137,google,Low Value,"Less than $250,000",paid search,Eastern,51,NC
+H-00138,google,High Value,"$250,000 to $499,999",rd,Central,100,MN
+H-00139,meta,Low Value,"Less than $250,000",prospecting,Eastern,34,VA
+H-00140,meta,Low Value,"Less than $250,000",prospecting,Mountain,35,MT
+H-00141,google,Low Value,"Less than $250,000",rd,Central,27,TN
+H-00142,google,Ideal,"$5,000,000 to $9,999,999",organic search,Eastern,31,NY
+H-00143,google,High Value,"$1,000,000 to $4,999,999",rd,Eastern,62,MA
+H-00144,bing,High Value,"$500,000 to $999,999",nonbrand,Central,99,WI
+H-00145,bing,Ideal,"$250,000 to $499,999",cpc,Eastern,46,
+H-00146,bing,Ideal,"Less than $250,000",brand,Eastern,100,PA
+H-00147,google,Low Value,"Less than $250,000",nonbrand,Eastern,60,PA
+H-00148,google,Ideal,"$5,000,000 to $9,999,999",rd,Central,83,TN
+H-00149,bing,Ideal,"$250,000 to $499,999",paid search,Mountain,85,UT
+H-00150,meta,Ideal,"$500,000 to $999,999",rd,Central,52,IL
+H-00151,google,Low Value,"$250,000 to $499,999",rd,Central,57,MN
+H-00152,meta,Ideal,"$500,000 to $999,999",brand,Mountain,100,CO
+H-00153,google,Ideal,"$1,000,000 to $4,999,999",nonbrand,Eastern,48,OH
+H-00154,google,High Value,"$250,000 to $499,999",rd,Pacific,81,WA
+H-00155,meta,Low Value,"Less than $250,000",prospecting,Eastern,5,NY
+H-00156,google,Ideal,"$500,000 to $999,999",pmax,Central,71,TX
+H-00157,meta,Low Value,"Less than $250,000",rd,Pacific,17,NV
+H-00158,google,High Value,"Less than $250,000",paid search,Central,63,IL
+H-00159,tiktok,Ideal,"$500,000 to $999,999",rd,Central,55,MN
+H-00160,bing,Low Value,"Less than $250,000",cpc,Eastern,100,FL
+H-00161,bing,Unknown,"$1,000,000 to $4,999,999",rd,Pacific,51,NV
+H-00162,google,Ideal,"Less than $250,000",nonbrand,Mountain,97,CO
+H-00163,meta,Low Value,"Less than $250,000",prospecting,Central,0,IL
+H-00164,google,Ideal,"$1,000,000 to $4,999,999",ppc,Pacific,56,CA
+H-00165,meta,Ideal,,organic social,Pacific,55,CA
+H-00166,meta,Low Value,"Less than $250,000",prospecting,Central,94,TX
+H-00167,google,High Value,"$5,000,000 to $9,999,999",rd,Central,100,MO
+H-00168,bing,Ideal,"$1,000,000 to $4,999,999",paid search,Central,85,WI
+H-00169,tiktok,Ideal,"Less than $250,000",rd,Pacific,39,CA
+H-00170,meta,Unknown,"Less than $250,000",rd,Eastern,26,NY
+H-00171,google,High Value,"$500,000 to $999,999",prospecting,Eastern,67,OH
+H-00172,meta,Low Value,"Less than $250,000",rd,Central,35,TX
+H-00173,tiktok,High Value,"$500,000 to $999,999",rd,Eastern,63,NC
+H-00174,google,Low Value,"$500,000 to $999,999",cpc,Pacific,27,CA
+H-00175,tiktok,Ideal,"Less than $250,000",prospecting,Eastern,51,FL
+H-00176,google,High Value,"Less than $250,000",brand,Eastern,64,
+H-00177,meta,Low Value,Self-Serve Signup,nonbrand,Central,16,WI
+H-00178,tiktok,High Value,"$5,000,000 to $9,999,999",prospecting,Arizona,68,AZ
+H-00179,google,Low Value,"$1,000,000 to $4,999,999",rd,Eastern,32,OH
+H-00180,meta,Ideal,"Less than $250,000",brand,Pacific,70,OR
+H-00181,tiktok,Low Value,Self-Serve Signup,rd,Eastern,25,OH
+H-00182,google,Low Value,"Less than $250,000",prospecting,Eastern,31,FL
+H-00183,bing,Unknown,"Less than $250,000",ppc,,44,
+H-00184,tiktok,Low Value,"$1,000,000 to $4,999,999",rd,Central,0,WI
+H-00185,google,High Value,"$250,000 to $499,999",brand,Eastern,100,PA
+H-00186,tiktok,Low Value,"Less than $250,000",organic social,Eastern,36,MI
+H-00187,bing,Low Value,"Less than $250,000",cpc,Eastern,59,OH
+H-00188,tiktok,Ideal,"Less than $250,000",prospecting,Central,19,IL
+H-00189,meta,Low Value,"Less than $250,000",organic social,Eastern,0,NY
+H-00190,bing,Ideal,"$250,000 to $499,999",brand,Eastern,71,FL
+H-00191,meta,Ideal,"$500,000 to $999,999",brand,Eastern,55,NY
+H-00192,bing,High Value,"$1,000,000 to $4,999,999",rd,Pacific,59,CA
+H-00193,meta,High Value,"$1,000,000 to $4,999,999",organic social,Eastern,87,FL
+H-00194,google,Low Value,"Less than $250,000",cpc,Arizona,,AZ
+H-00195,tiktok,Low Value,"Less than $250,000",cpc,Eastern,0,NC
+H-00196,meta,High Value,"Less than $250,000",retargeting,Pacific,54,CA
+H-00197,google,Low Value,"$1,000,000 to $4,999,999",brand,Pacific,18,WA
+H-00198,google,Ideal,"$1,000,000 to $4,999,999",organic search,,47,
+H-00199,tiktok,Ideal,"$500,000 to $999,999",rd,Central,52,TX
+H-00200,meta,Low Value,"$250,000 to $499,999",organic social,Pacific,100,CA
+H-00201,tiktok,High Value,"$250,000 to $499,999",prospecting,Eastern,16,VA
+H-00202,bing,Ideal,"$500,000 to $999,999",rd,Central,74,IL
+H-00203,tiktok,Low Value,"Less than $250,000",organic social,,47,
+H-00204,google,Low Value,"$1,000,000 to $4,999,999",nonbrand,Pacific,44,CA
+H-00205,google,Ideal,"Less than $250,000",paid search,Pacific,79,CA
+H-00206,meta,Low Value,"Less than $250,000",prospecting,Mountain,35,CO
+H-00207,tiktok,Low Value,"$250,000 to $499,999",rd,Eastern,13,PA
+H-00208,google,Ideal,"Less than $250,000",ppc,Eastern,53,VA
+H-00209,bing,High Value,"$500,000 to $999,999",cpc,Eastern,34,NC
+H-00210,meta,Low Value,"$250,000 to $499,999",organic social,Central,28,MO
+H-00211,google,Unknown,"Less than $250,000",brand,,94,
+H-00212,meta,Ideal,"$250,000 to $499,999",rd,Eastern,85,OH
+H-00213,google,Low Value,Self-Serve Signup,ppc,Pacific,66,CA
+H-00214,bing,Low Value,"Less than $250,000",brand,Pacific,51,WA
+H-00215,meta,Low Value,Self-Serve Signup,rd,Central,18,
+H-00216,google,Low Value,"Less than $250,000",rd,Eastern,52,FL
+H-00217,google,Low Value,"$250,000 to $499,999",rd,Eastern,29,GA
+H-00218,meta,Low Value,"$1,000,000 to $4,999,999",retargeting,Eastern,61,MI
+H-00219,google,Ideal,"$500,000 to $999,999",brand,Eastern,100,VA
+H-00220,tiktok,Low Value,"$250,000 to $499,999",rd,Eastern,38,GA
+H-00221,meta,Low Value,"$250,000 to $499,999",organic social,Eastern,44,FL
+H-00222,google,High Value,,brand,,74,
+H-00223,meta,Low Value,"$500,000 to $999,999",rd,Eastern,60,MA
+H-00224,meta,High Value,"$10,000,000 to $24,999,999",retargeting,Eastern,92,OH
+H-00225,google,Ideal,"$250,000 to $499,999",rd,Eastern,71,NY
+H-00226,meta,Ideal,"$250,000 to $499,999",prospecting,Eastern,100,NC
+H-00227,google,Low Value,"Less than $250,000",nonbrand,Central,18,TX
+H-00228,tiktok,Low Value,"$500,000 to $999,999",rd,Eastern,58,GA
+H-00229,meta,Unknown,"Less than $250,000",rd,Eastern,29,FL
+H-00230,google,Low Value,"Less than $250,000",paid search,Central,0,TX
+H-00231,tiktok,Unknown,"$500,000 to $999,999",retargeting,Eastern,24,NY
+H-00232,google,High Value,,ppc,Central,90,IL
+H-00233,meta,Low Value,"Less than $250,000",paid search,Pacific,43,CA
+H-00234,bing,Ideal,"Less than $250,000",paid search,Mountain,28,CO
+H-00235,google,Low Value,"$250,000 to $499,999",brand,Eastern,,NY
+H-00236,meta,Ideal,"$250,000 to $499,999",rd,,13,
+H-00237,google,Ideal,"$500,000 to $999,999",rd,Eastern,37,PA
+H-00238,google,Low Value,"Less than $250,000",paid search,Mountain,59,UT
+H-00239,meta,Low Value,"Less than $250,000",prospecting,Eastern,1,PA
+H-00240,google,High Value,"$500,000 to $999,999",rd,Pacific,91,CA
+H-00241,google,Unknown,"$500,000 to $999,999",rd,Eastern,37,GA
+H-00242,tiktok,Ideal,"$1,000,000 to $4,999,999",rd,Eastern,72,NY
+H-00243,google,Low Value,"Less than $250,000",paid search,Eastern,19,FL
+H-00244,google,High Value,"$250,000 to $499,999",prospecting,Pacific,81,WA
+H-00245,bing,Low Value,"$10,000,000 to $24,999,999",paid search,Eastern,45,NY
+H-00246,google,Unknown,"$250,000 to $499,999",rd,Central,36,TX
+H-00247,google,Unknown,"Less than $250,000",rd,Eastern,62,VA
+H-00248,google,High Value,"$1,000,000 to $4,999,999",brand,Eastern,61,MA
+H-00249,google,Ideal,"Less than $250,000",nonbrand,Central,64,WI
+H-00250,google,Unknown,"$10,000,000 to $24,999,999",nonbrand,Eastern,86,NY
+H-00251,tiktok,Ideal,"Less than $250,000",organic social,Eastern,37,NY
+H-00252,google,Unknown,"$500,000 to $999,999",pmax,Mountain,46,
+H-00253,google,Ideal,"$1,000,000 to $4,999,999",pmax,Pacific,60,CA
+H-00254,meta,Low Value,Self-Serve Signup,organic social,Eastern,0,NJ
+H-00255,meta,Ideal,"Less than $250,000",retargeting,Pacific,35,CA
+H-00256,google,Low Value,"$500,000 to $999,999",brand,Eastern,79,FL
+H-00257,tiktok,Unknown,"Less than $250,000",rd,Central,22,IL
+H-00258,bing,Ideal,"Less than $250,000",cpc,Eastern,28,NY
+H-00259,meta,Low Value,"$500,000 to $999,999",rd,Pacific,43,WA
+H-00260,meta,Low Value,"Less than $250,000",prospecting,Central,9,IL
+H-00261,meta,Ideal,"Less than $250,000",brand,Central,85,TX
+H-00262,tiktok,Low Value,"$500,000 to $999,999",organic social,Eastern,22,OH
+H-00263,google,Low Value,"$250,000 to $499,999",nonbrand,Eastern,45,NY
+H-00264,meta,Low Value,"$5,000,000 to $9,999,999",rd,Pacific,63,WA
+H-00265,tiktok,Unknown,"$500,000 to $999,999",prospecting,Central,79,TN
+H-00266,google,Low Value,"$250,000 to $499,999",prospecting,Central,53,IL
+H-00267,bing,Low Value,"Less than $250,000",organic search,Eastern,50,VA
+H-00268,tiktok,Low Value,"Less than $250,000",organic social,Pacific,27,NV
+H-00269,google,Low Value,"$1,000,000 to $4,999,999",brand,Arizona,69,AZ
+H-00270,meta,Low Value,"$250,000 to $499,999",prospecting,Pacific,100,WA
+H-00271,meta,Low Value,"$250,000 to $499,999",rd,Alaska,11,AK
+H-00272,meta,Ideal,Self-Serve Signup,rd,Central,27,TN
+H-00273,google,Low Value,"$5,000,000 to $9,999,999",nonbrand,Eastern,45,MI
+H-00274,meta,Ideal,"Less than $250,000",rd,Central,29,IL
+H-00275,bing,Low Value,,nonbrand,Pacific,68,CA
+H-00276,meta,Low Value,"$1,000,000 to $4,999,999",prospecting,Central,53,TX
+H-00277,meta,Low Value,"Less than $250,000",paid search,Eastern,2,FL
+H-00278,bing,Unknown,"$10,000,000 to $24,999,999",nonbrand,Central,70,TX
+H-00279,google,Ideal,"$500,000 to $999,999",rd,Central,,TN
+H-00280,google,Ideal,"$250,000 to $499,999",pmax,Central,80,TX
+H-00281,meta,High Value,"$1,000,000 to $4,999,999",rd,Mountain,53,CO
+H-00282,google,High Value,"$1,000,000 to $4,999,999",pmax,Eastern,52,PA
+H-00283,google,Low Value,"$250,000 to $499,999",nonbrand,Eastern,53,NJ
+H-00284,google,High Value,"$1,000,000 to $4,999,999",rd,Central,100,IL
+H-00285,google,Unknown,"$500,000 to $999,999",rd,Mountain,30,CO
+H-00286,tiktok,Low Value,"Less than $250,000",,Eastern,41,NC
+H-00287,tiktok,Low Value,"$250,000 to $499,999",prospecting,Eastern,40,GA
+H-00288,meta,Low Value,"Less than $250,000",rd,Central,80,TN
+H-00289,meta,Low Value,"$1,000,000 to $4,999,999",rd,Eastern,59,GA
+H-00290,google,High Value,"$5,000,000 to $9,999,999",cpc,Eastern,59,FL
+H-00291,google,High Value,"$250,000 to $499,999",brand,Eastern,79,FL
+H-00292,google,Low Value,"Less than $250,000",prospecting,Eastern,17,PA
+H-00293,tiktok,Unknown,"$1,000,000 to $4,999,999",prospecting,Central,100,TX
+H-00294,meta,Ideal,"$500,000 to $999,999",organic social,Eastern,24,NY
+H-00295,meta,High Value,"Less than $250,000",cpc,Central,72,WI
+H-00296,google,Ideal,"$250,000 to $499,999",nonbrand,,90,
+H-00297,google,Ideal,"$250,000 to $499,999",nonbrand,Eastern,95,VA
+H-00298,meta,Low Value,Self-Serve Signup,nonbrand,Pacific,18,CA
+H-00299,tiktok,Ideal,"Less than $250,000",ppc,Central,23,TX
+H-00300,tiktok,High Value,"$250,000 to $499,999",organic search,Central,44,IL
+H-00301,bing,Unknown,"$500,000 to $999,999",rd,Eastern,78,PA
+H-00302,meta,Low Value,Self-Serve Signup,retargeting,Central,63,IL
+H-00303,google,High Value,"$1,000,000 to $4,999,999",rd,Central,100,TX
+H-00304,meta,Low Value,Self-Serve Signup,rd,Arizona,25,AZ
+H-00305,meta,Low Value,"$250,000 to $499,999",brand,Eastern,0,OH
+H-00306,tiktok,Ideal,"$500,000 to $999,999",retargeting,Arizona,42,AZ
+H-00307,tiktok,Low Value,"Less than $250,000",prospecting,Eastern,12,OH
+H-00308,tiktok,Low Value,"$250,000 to $499,999",organic social,Eastern,32,GA
+H-00309,google,Ideal,"$5,000,000 to $9,999,999",brand,Eastern,44,FL
+H-00310,meta,Unknown,"$250,000 to $499,999",rd,Eastern,74,GA
+H-00311,google,Low Value,"Less than $250,000",rd,Eastern,30,NJ
+H-00312,google,Low Value,"$500,000 to $999,999",brand,Central,33,IL
+H-00313,meta,Unknown,"Less than $250,000",organic social,Eastern,55,NY
+H-00314,meta,Ideal,"$500,000 to $999,999",paid search,Central,82,TX
+H-00315,meta,Ideal,"Less than $250,000",prospecting,Mountain,81,MT
+H-00316,google,High Value,"$10,000,000 to $24,999,999",nonbrand,Eastern,81,NC
+H-00317,google,Low Value,"$1,000,000 to $4,999,999",rd,Eastern,43,NC
+H-00318,google,Ideal,"$10,000,000 to $24,999,999",rd,Eastern,97,GA
+H-00319,meta,Low Value,"Less than $250,000",retargeting,Eastern,92,VA
+H-00320,meta,Ideal,"$1,000,000 to $4,999,999",rd,Eastern,0,NY
+H-00321,meta,Low Value,"Less than $250,000",rd,Eastern,20,NJ
+H-00322,google,Ideal,"$500,000 to $999,999",rd,Pacific,10,CA
+H-00323,meta,Unknown,"Less than $250,000",retargeting,Eastern,46,NJ
+H-00324,meta,Low Value,"Less than $250,000",rd,Eastern,0,GA
+H-00325,google,Ideal,"$1,000,000 to $4,999,999",ppc,Eastern,61,MA
+H-00326,google,Low Value,"Less than $250,000",pmax,Central,8,TX
+H-00327,google,Ideal,"$1,000,000 to $4,999,999",nonbrand,Pacific,75,CA
+H-00328,meta,Low Value,"Less than $250,000",rd,Mountain,9,UT
+H-00329,tiktok,Low Value,"$5,000,000 to $9,999,999",retargeting,Pacific,90,CA
+H-00330,meta,Ideal,"$10,000,000 to $24,999,999",rd,Central,100,TX
+H-00331,google,High Value,"$10,000,000 to $24,999,999",ppc,Eastern,90,NY
+H-00332,google,High Value,"$250,000 to $499,999",rd,Eastern,70,NY
+H-00333,google,Ideal,"$250,000 to $499,999",cpc,Eastern,64,VA
+H-00334,google,Low Value,"$10,000,000 to $24,999,999",rd,Pacific,75,CA
+H-00335,bing,Ideal,"Less than $250,000",brand,Eastern,64,NY
+H-00336,tiktok,Low Value,"$250,000 to $499,999",retargeting,,77,
+H-00337,google,Ideal,"$1,000,000 to $4,999,999",brand,Central,66,WI
+H-00338,google,Ideal,"$250,000 to $499,999",paid search,Eastern,66,PA
+H-00339,tiktok,Low Value,"Less than $250,000",rd,Central,2,WI
+H-00340,bing,Low Value,"$1,000,000 to $4,999,999",paid search,Eastern,36,NY
+H-00341,google,Low Value,"Less than $250,000",brand,Pacific,28,CA
+H-00342,meta,Low Value,"Less than $250,000",rd,Eastern,81,PA
+H-00343,meta,Ideal,"$1,000,000 to $4,999,999",prospecting,Mountain,62,UT
+H-00344,google,Unknown,"$1,000,000 to $4,999,999",,Central,55,IL
+H-00345,tiktok,Low Value,"Less than $250,000",prospecting,,3,
+H-00346,meta,Low Value,,nonbrand,Central,45,IL
+H-00347,google,Low Value,"Less than $250,000",brand,Eastern,48,FL
+H-00348,bing,Low Value,"Less than $250,000",rd,Central,11,MN
+H-00349,tiktok,Unknown,"Less than $250,000",rd,Eastern,40,GA
+H-00350,meta,Low Value,"$250,000 to $499,999",rd,Central,38,IL
+H-00351,google,Low Value,"Less than $250,000",brand,Eastern,30,PA
+H-00352,bing,High Value,"$500,000 to $999,999",nonbrand,Eastern,83,OH
+H-00353,tiktok,Ideal,"$500,000 to $999,999",prospecting,Eastern,11,VA
+H-00354,google,High Value,"$500,000 to $999,999",brand,Eastern,62,OH
+H-00355,bing,Ideal,"$10,000,000 to $24,999,999",nonbrand,Eastern,79,PA
+H-00356,google,High Value,"$1,000,000 to $4,999,999",rd,Eastern,77,
+H-00357,meta,Low Value,"Less than $250,000",retargeting,Eastern,62,FL
+H-00358,meta,Ideal,"$250,000 to $499,999",rd,Central,30,
+H-00359,google,Ideal,"$250,000 to $499,999",rd,Pacific,38,OR
+H-00360,bing,Low Value,"Less than $250,000",paid search,,12,
+H-00361,bing,High Value,"$10,000,000 to $24,999,999",brand,Mountain,31,UT
+H-00362,meta,Low Value,"Less than $250,000",retargeting,Pacific,44,WA
+H-00363,tiktok,Low Value,"Less than $250,000",rd,Mountain,73,CO
+H-00364,google,High Value,"Less than $250,000",organic search,Central,41,LA
+H-00365,google,Ideal,"$500,000 to $999,999",rd,Central,92,MO
+H-00366,google,Ideal,"$1,000,000 to $4,999,999",rd,Pacific,39,CA
+H-00367,google,Low Value,Self-Serve Signup,rd,Central,38,TX
+H-00368,tiktok,Low Value,"$500,000 to $999,999",rd,Eastern,84,NC
+H-00369,bing,High Value,"$10,000,000 to $24,999,999",nonbrand,Central,37,TX
+H-00370,meta,Low Value,"Less than $250,000",rd,Central,46,LA
+H-00371,google,High Value,"$5,000,000 to $9,999,999",paid search,Pacific,100,OR
+H-00372,meta,Ideal,"Less than $250,000",rd,Eastern,60,PA
+H-00373,google,Ideal,"$500,000 to $999,999",rd,,46,
+H-00374,meta,Low Value,"$250,000 to $499,999",retargeting,Mountain,81,CO
+H-00375,meta,Low Value,"Less than $250,000",rd,Central,92,MN
+H-00376,tiktok,Low Value,"Less than $250,000",prospecting,Eastern,6,NY
+H-00377,bing,Low Value,"$1,000,000 to $4,999,999",rd,Eastern,59,VA
+H-00378,google,Low Value,"$250,000 to $499,999",brand,Pacific,40,OR
+H-00379,meta,Low Value,Self-Serve Signup,rd,Central,0,IL
+H-00380,google,Low Value,"$500,000 to $999,999",rd,Pacific,51,NV
+H-00381,tiktok,Low Value,"$250,000 to $499,999",organic social,Eastern,45,FL
+H-00382,meta,Low Value,"Less than $250,000",rd,Eastern,4,VA
+H-00383,meta,Unknown,"$250,000 to $499,999",rd,Pacific,51,CA
+H-00384,tiktok,Unknown,"Less than $250,000",prospecting,Pacific,75,CA
+H-00385,meta,Low Value,"Less than $250,000",organic social,Pacific,14,NV
+H-00386,google,High Value,,rd,Eastern,23,GA
+H-00387,tiktok,Ideal,"$250,000 to $499,999",retargeting,Central,47,TX
+H-00388,meta,Ideal,"Less than $250,000",prospecting,Eastern,47,FL
+H-00389,google,Ideal,"$1,000,000 to $4,999,999",nonbrand,Arizona,66,AZ
+H-00390,google,High Value,"$5,000,000 to $9,999,999",brand,Eastern,,OH
+H-00391,google,Low Value,Self-Serve Signup,rd,Eastern,0,GA
+H-00392,tiktok,Ideal,"Less than $250,000",rd,,41,
+H-00393,google,Low Value,"Less than $250,000",brand,Eastern,3,NC
+H-00394,google,Low Value,"Less than $250,000",brand,Arizona,80,AZ
+H-00395,tiktok,Low Value,"Less than $250,000",prospecting,Central,22,TX
+H-00396,meta,High Value,"$1,000,000 to $4,999,999",organic social,Central,50,MO
+H-00397,google,Low Value,"$250,000 to $499,999",nonbrand,,0,
+H-00398,meta,Low Value,"$10,000,000 to $24,999,999",rd,Central,90,TN
+H-00399,google,Ideal,"Less than $250,000",brand,Arizona,32,AZ
+H-00400,google,Low Value,"Less than $250,000",brand,Pacific,40,WA
+H-00401,google,Ideal,"Less than $250,000",pmax,Mountain,57,MT
+H-00402,meta,Low Value,"$500,000 to $999,999",,Central,32,TX
+H-00403,google,High Value,"$5,000,000 to $9,999,999",pmax,Pacific,27,CA
+H-00404,google,Low Value,"Less than $250,000",rd,Central,46,IL
+H-00405,meta,Unknown,"Less than $250,000",organic social,Central,69,IL
+H-00406,google,Low Value,"Less than $250,000",paid search,Eastern,34,OH
+H-00407,meta,Low Value,"Less than $250,000",paid search,Eastern,26,NY
+H-00408,tiktok,Unknown,"$250,000 to $499,999",organic social,Arizona,19,AZ
+H-00409,google,Low Value,"Less than $250,000",pmax,Central,65,TX
+H-00410,meta,Low Value,Self-Serve Signup,retargeting,Central,60,TX
+H-00411,google,High Value,"Less than $250,000",brand,Eastern,46,NY
+H-00412,google,Unknown,"Less than $250,000",pmax,Central,40,TX
+H-00413,google,Ideal,"$10,000,000 to $24,999,999",brand,Eastern,92,FL
+H-00414,meta,Low Value,"Less than $250,000",retargeting,Central,,MO
+H-00415,google,Ideal,"$250,000 to $499,999",rd,Eastern,62,VA
+H-00416,meta,Low Value,"Less than $250,000",prospecting,Arizona,11,AZ
+H-00417,meta,Unknown,"Less than $250,000",retargeting,Central,,MN
+H-00418,bing,High Value,"$500,000 to $999,999",nonbrand,Pacific,66,CA
+H-00419,tiktok,Low Value,"Less than $250,000",prospecting,Eastern,56,GA
+H-00420,google,Low Value,"$250,000 to $499,999",rd,Pacific,88,CA
+H-00421,tiktok,Ideal,"$1,000,000 to $4,999,999",organic social,Central,43,MO
+H-00422,google,Ideal,"$250,000 to $499,999",ppc,Pacific,79,CA
+H-00423,meta,High Value,"Less than $250,000",rd,Eastern,43,NC
+H-00424,google,Low Value,"Less than $250,000",ppc,Eastern,38,GA
+H-00425,google,Ideal,"$500,000 to $999,999",paid search,Central,19,LA
+H-00426,meta,High Value,"$1,000,000 to $4,999,999",organic social,Eastern,79,NY
+H-00427,tiktok,Ideal,"Less than $250,000",rd,Eastern,66,NY
+H-00428,google,Low Value,"Less than $250,000",organic search,Alaska,,AK
+H-00429,bing,Low Value,"$250,000 to $499,999",rd,Central,79,TN
+H-00430,meta,Low Value,"Less than $250,000",retargeting,Eastern,21,GA
+H-00431,tiktok,Ideal,"$10,000,000 to $24,999,999",prospecting,Central,8,TN
+H-00432,tiktok,High Value,"$1,000,000 to $4,999,999",organic social,Eastern,100,NC
+H-00433,tiktok,Low Value,"Less than $250,000",rd,Eastern,34,NJ
+H-00434,google,Ideal,"Less than $250,000",pmax,Eastern,71,NY
+H-00435,meta,Unknown,"$500,000 to $999,999",brand,Eastern,73,FL
+H-00436,bing,Low Value,"Less than $250,000",,Eastern,4,MI
+H-00437,tiktok,Ideal,"$500,000 to $999,999",organic social,Pacific,35,NV
+H-00438,tiktok,Low Value,"$250,000 to $499,999",prospecting,Central,45,MN
+H-00439,google,Low Value,"$1,000,000 to $4,999,999",rd,Eastern,79,GA
+H-00440,tiktok,Low Value,"Less than $250,000",rd,Pacific,14,CA
+H-00441,meta,Ideal,"Less than $250,000",brand,Central,69,MN
+H-00442,meta,Low Value,"Less than $250,000",rd,Eastern,61,
+H-00443,google,Ideal,"$5,000,000 to $9,999,999",pmax,Eastern,84,OH
+H-00444,tiktok,Ideal,,organic social,Eastern,8,FL
+H-00445,google,Low Value,"Less than $250,000",organic search,Eastern,23,FL
+H-00446,google,Low Value,"Less than $250,000",rd,Pacific,23,CA
+H-00447,google,Low Value,"$1,000,000 to $4,999,999",nonbrand,Central,95,TN
+H-00448,meta,Ideal,"$250,000 to $499,999",organic social,Pacific,59,WA
+H-00449,google,Low Value,"$250,000 to $499,999",cpc,Mountain,84,UT
+H-00450,meta,Ideal,"Less than $250,000",organic search,Central,37,IL
+H-00451,tiktok,Low Value,"Less than $250,000",prospecting,Central,37,TX
+H-00452,google,Low Value,"Less than $250,000",cpc,,74,
+H-00453,meta,Ideal,"$5,000,000 to $9,999,999",brand,Eastern,69,VA
+H-00454,meta,Low Value,"Less than $250,000",rd,Pacific,16,WA
+H-00455,meta,Ideal,"Less than $250,000",rd,,32,
+H-00456,tiktok,Unknown,"$10,000,000 to $24,999,999",cpc,Eastern,94,
+H-00457,bing,Low Value,"Less than $250,000",organic search,Eastern,70,NY
+H-00458,bing,Unknown,"$500,000 to $999,999",ppc,Pacific,20,CA
+H-00459,meta,Unknown,"$1,000,000 to $4,999,999",rd,Mountain,0,CO
+H-00460,tiktok,Low Value,"$250,000 to $499,999",organic social,Pacific,47,CA
+H-00461,meta,Low Value,"$500,000 to $999,999",organic social,Eastern,52,NC
+H-00462,meta,Low Value,"$500,000 to $999,999",organic social,Eastern,100,NY
+H-00463,bing,Ideal,"$10,000,000 to $24,999,999",paid search,Eastern,,NY
+H-00464,google,Ideal,"Less than $250,000",rd,Central,21,MN
+H-00465,google,Low Value,"Less than $250,000",rd,Pacific,31,CA
+H-00466,meta,Unknown,"$250,000 to $499,999",rd,Pacific,32,NV
+H-00467,tiktok,Low Value,"Less than $250,000",organic social,Central,29,TN
+H-00468,tiktok,Low Value,"Less than $250,000",rd,Pacific,38,CA
+H-00469,google,Ideal,"$10,000,000 to $24,999,999",rd,Eastern,77,PA
+H-00470,bing,Low Value,"Less than $250,000",rd,Pacific,11,WA
+H-00471,google,Low Value,"$250,000 to $499,999",ppc,Pacific,26,NV
+H-00472,meta,Low Value,"Less than $250,000",prospecting,Central,43,TN
+H-00473,meta,Ideal,"$250,000 to $499,999",,Eastern,41,FL
+H-00474,google,Low Value,"$500,000 to $999,999",pmax,Pacific,57,CA
+H-00475,meta,Ideal,"$500,000 to $999,999",prospecting,Pacific,53,CA
+H-00476,google,Ideal,"$250,000 to $499,999",cpc,Eastern,100,MA
+H-00477,meta,Low Value,"Less than $250,000",organic social,Pacific,23,NV
+H-00478,meta,Ideal,"Less than $250,000",organic social,Central,75,IL
+H-00479,google,High Value,"$250,000 to $499,999",rd,Central,100,MO
+H-00480,google,Unknown,"$5,000,000 to $9,999,999",rd,Central,84,IL
+H-00481,meta,Low Value,"Less than $250,000",rd,Central,32,MO
+H-00482,bing,Low Value,"Less than $250,000",rd,Central,29,IL
+H-00483,tiktok,Ideal,"$250,000 to $499,999",rd,Eastern,67,GA
+H-00484,google,High Value,"$500,000 to $999,999",brand,Eastern,100,NC
+H-00485,google,Low Value,"Less than $250,000",rd,Pacific,20,CA
+H-00486,meta,Low Value,"$250,000 to $499,999",rd,Eastern,0,NJ
+H-00487,bing,Ideal,"Less than $250,000",nonbrand,Central,85,IL
+H-00488,bing,High Value,"$5,000,000 to $9,999,999",rd,Eastern,59,PA
+H-00489,meta,Ideal,"Less than $250,000",rd,Eastern,4,VA
+H-00490,bing,High Value,"$250,000 to $499,999",rd,Mountain,,CO
+H-00491,tiktok,Low Value,"Less than $250,000",organic social,Eastern,17,PA
+H-00492,meta,Low Value,"Less than $250,000",prospecting,Pacific,0,CA
+H-00493,tiktok,Low Value,"$250,000 to $499,999",organic social,Pacific,0,CA
+H-00494,meta,Ideal,"$500,000 to $999,999",prospecting,Pacific,34,CA
+H-00495,google,Low Value,"$10,000,000 to $24,999,999",rd,Eastern,89,NC
+H-00496,tiktok,Ideal,"$5,000,000 to $9,999,999",organic social,,63,
+H-00497,meta,Ideal,"$1,000,000 to $4,999,999",rd,Eastern,34,VA
+H-00498,bing,Ideal,"$250,000 to $499,999",brand,Eastern,26,PA
+H-00499,google,Low Value,"Less than $250,000",organic search,Eastern,100,NC
+H-00500,google,Low Value,"$500,000 to $999,999",organic search,Central,100,IL
+H-00501,meta,Low Value,"Less than $250,000",rd,Pacific,84,WA
+H-00502,google,High Value,"$250,000 to $499,999",prospecting,Pacific,62,CA
+H-00503,meta,High Value,"Less than $250,000",rd,Eastern,67,GA
+H-00504,google,High Value,"$500,000 to $999,999",rd,Pacific,100,CA
+H-00505,google,Ideal,"Less than $250,000",brand,Pacific,70,CA
+H-00506,meta,Low Value,"$250,000 to $499,999",retargeting,Pacific,38,WA
+H-00507,bing,High Value,"$1,000,000 to $4,999,999",paid search,Eastern,84,FL
+H-00508,google,High Value,,nonbrand,Mountain,0,MT
+H-00509,meta,Low Value,"$250,000 to $499,999",brand,Pacific,10,CA
+H-00510,google,Ideal,"$250,000 to $499,999",rd,Eastern,83,NY
+H-00511,google,Ideal,"$250,000 to $499,999",brand,Eastern,62,VA
+H-00512,tiktok,Low Value,"Less than $250,000",organic social,Central,52,TX
+H-00513,google,Ideal,"Less than $250,000",rd,Pacific,,CA
+H-00514,bing,Ideal,"$500,000 to $999,999",cpc,Pacific,37,CA
+H-00515,tiktok,Ideal,"$250,000 to $499,999",brand,Central,54,IL
+H-00516,meta,Low Value,"Less than $250,000",brand,Eastern,5,FL
+H-00517,meta,Low Value,"$500,000 to $999,999",prospecting,Mountain,37,CO
+H-00518,google,High Value,"$500,000 to $999,999",rd,Eastern,32,PA
+H-00519,bing,Low Value,"$5,000,000 to $9,999,999",organic search,Eastern,22,MI
+H-00520,tiktok,Ideal,Self-Serve Signup,prospecting,Pacific,11,WA
+H-00521,meta,Ideal,"Less than $250,000",organic social,Eastern,47,FL
+H-00522,google,Ideal,"$1,000,000 to $4,999,999",paid search,Eastern,85,FL
+H-00523,bing,Ideal,"$5,000,000 to $9,999,999",cpc,Eastern,43,VA
+H-00524,tiktok,Low Value,"$10,000,000 to $24,999,999",paid search,Eastern,80,NC
+H-00525,google,High Value,"Less than $250,000",rd,Central,,IL
+H-00526,tiktok,High Value,"$500,000 to $999,999",organic social,Pacific,61,CA
+H-00527,google,High Value,"$1,000,000 to $4,999,999",organic search,Central,44,WI
+H-00528,google,Ideal,"Less than $250,000",paid search,Pacific,29,WA
+H-00529,meta,Low Value,"$500,000 to $999,999",rd,Eastern,43,PA
+H-00530,google,Low Value,"$250,000 to $499,999",cpc,Eastern,66,FL
+H-00531,google,Ideal,"$5,000,000 to $9,999,999",,Central,29,WI
+H-00532,google,High Value,"$5,000,000 to $9,999,999",brand,Eastern,100,MI
+H-00533,google,Ideal,"$5,000,000 to $9,999,999",nonbrand,Pacific,38,NV
+H-00534,meta,Low Value,"Less than $250,000",retargeting,Central,0,TX
+H-00535,meta,Ideal,"$250,000 to $499,999",rd,Mountain,31,UT
+H-00536,meta,Ideal,"$500,000 to $999,999",rd,Pacific,79,CA
+H-00537,meta,Low Value,"Less than $250,000",paid search,Eastern,44,PA
+H-00538,google,Low Value,"Less than $250,000",nonbrand,Central,17,TX
+H-00539,google,Low Value,"$250,000 to $499,999",brand,Mountain,11,MT
+H-00540,google,Low Value,"Less than $250,000",rd,Pacific,8,CA
+H-00541,google,Ideal,"Less than $250,000",rd,,16,
+H-00542,bing,High Value,"$500,000 to $999,999",nonbrand,Pacific,9,CA
+H-00543,google,Low Value,Self-Serve Signup,cpc,Eastern,64,MA
+H-00544,google,Low Value,"$250,000 to $499,999",paid search,Arizona,62,AZ
+H-00545,tiktok,Unknown,"$250,000 to $499,999",prospecting,Eastern,50,FL
+H-00546,bing,Low Value,"$250,000 to $499,999",rd,Pacific,51,CA
+H-00547,google,High Value,"$250,000 to $499,999",cpc,Central,57,TX
+H-00548,tiktok,Ideal,"$500,000 to $999,999",rd,Eastern,43,
+H-00549,meta,High Value,"$250,000 to $499,999",rd,Pacific,100,CA
+H-00550,google,Low Value,"Less than $250,000",rd,,65,
+H-00551,meta,Low Value,"Less than $250,000",organic social,Eastern,,NY
+H-00552,tiktok,Low Value,"Less than $250,000",rd,Central,41,TX
+H-00553,meta,Low Value,"Less than $250,000",rd,Central,18,IL
+H-00554,meta,Ideal,"Less than $250,000",prospecting,Pacific,58,WA
+H-00555,bing,Low Value,"$1,000,000 to $4,999,999",rd,Central,38,MN
+H-00556,google,High Value,"$500,000 to $999,999",paid search,Central,19,TX
+H-00557,meta,Unknown,"$5,000,000 to $9,999,999",rd,Eastern,100,FL
+H-00558,meta,Low Value,"Less than $250,000",nonbrand,Eastern,24,NY
+H-00559,google,High Value,"$10,000,000 to $24,999,999",rd,Eastern,60,NY
+H-00560,bing,Low Value,"Less than $250,000",rd,Mountain,68,CO
+H-00561,tiktok,Low Value,"Less than $250,000",prospecting,Pacific,,
+H-00562,meta,Low Value,"Less than $250,000",prospecting,Pacific,67,CA
+H-00563,google,Ideal,"$250,000 to $499,999",brand,Central,85,TX
+H-00564,meta,Low Value,"Less than $250,000",retargeting,Pacific,0,CA
+H-00565,google,Ideal,"$250,000 to $499,999",ppc,Central,99,LA
+H-00566,meta,Unknown,Self-Serve Signup,organic social,Central,69,IL
+H-00567,meta,Low Value,"$500,000 to $999,999",retargeting,Eastern,24,NC
+H-00568,google,High Value,"$250,000 to $499,999",rd,Pacific,46,CA
+H-00569,bing,Low Value,"Less than $250,000",paid search,Eastern,77,FL
+H-00570,google,High Value,"$250,000 to $499,999",cpc,Eastern,97,VA
+H-00571,google,Low Value,"$1,000,000 to $4,999,999",rd,Central,62,IL
+H-00572,meta,Low Value,"$500,000 to $999,999",prospecting,Central,63,TX
+H-00573,google,Unknown,"$500,000 to $999,999",rd,Eastern,,FL
+H-00574,google,Ideal,,rd,Eastern,77,FL
+H-00575,meta,Ideal,"$500,000 to $999,999",rd,Eastern,0,GA
+H-00576,google,Ideal,"$250,000 to $499,999",organic search,Central,,TX
+H-00577,meta,Low Value,"Less than $250,000",prospecting,Eastern,51,NC
+H-00578,meta,Low Value,Self-Serve Signup,prospecting,Central,48,TX
+H-00579,tiktok,Low Value,"$250,000 to $499,999",organic social,Eastern,28,VA
+H-00580,google,High Value,"$10,000,000 to $24,999,999",nonbrand,Eastern,70,PA
+H-00581,google,Unknown,"$500,000 to $999,999",brand,Pacific,36,CA
+H-00582,tiktok,Low Value,"Less than $250,000",prospecting,Central,,TX
+H-00583,bing,Low Value,"$500,000 to $999,999",paid search,Eastern,57,VA
+H-00584,google,Ideal,"$500,000 to $999,999",rd,Pacific,77,WA
+H-00585,google,High Value,"Less than $250,000",rd,Arizona,73,AZ
+H-00586,bing,Low Value,"Less than $250,000",ppc,Pacific,27,NV
+H-00587,meta,Low Value,"Less than $250,000",rd,Pacific,25,CA
+H-00588,meta,Low Value,"Less than $250,000",prospecting,Eastern,,NJ
+H-00589,meta,Low Value,"Less than $250,000",prospecting,Eastern,17,FL
+H-00590,google,Ideal,"$5,000,000 to $9,999,999",rd,Pacific,55,OR
+H-00591,google,Ideal,"$250,000 to $499,999",brand,Pacific,26,WA
+H-00592,tiktok,High Value,"$10,000,000 to $24,999,999",prospecting,Pacific,60,CA
+H-00593,google,High Value,"Less than $250,000",rd,Central,78,MN
+H-00594,google,High Value,"$10,000,000 to $24,999,999",rd,Central,100,WI
+H-00595,bing,High Value,"Less than $250,000",rd,Eastern,59,OH
+H-00596,meta,Ideal,"Less than $250,000",rd,Central,39,WI
+H-00597,google,Low Value,Self-Serve Signup,nonbrand,Eastern,46,NC
+H-00598,meta,Low Value,"$250,000 to $499,999",rd,,41,
+H-00599,meta,Low Value,"Less than $250,000",brand,Pacific,30,CA
+H-00600,meta,Ideal,"Less than $250,000",prospecting,Pacific,55,CA
+H-00601,google,High Value,"$5,000,000 to $9,999,999",paid search,Central,55,IL
+H-00602,meta,Ideal,"$1,000,000 to $4,999,999",rd,Pacific,79,CA
+H-00603,tiktok,Ideal,"$250,000 to $499,999",rd,Eastern,85,FL
+H-00604,google,Ideal,"$500,000 to $999,999",rd,Pacific,75,CA
+H-00605,bing,Low Value,"Less than $250,000",rd,,6,
+H-00606,meta,Ideal,"$250,000 to $499,999",rd,Eastern,40,FL
+H-00607,google,Low Value,"Less than $250,000",rd,Central,,TN
+H-00608,google,High Value,"$5,000,000 to $9,999,999",rd,Pacific,57,WA
+H-00609,tiktok,Low Value,"Less than $250,000",rd,Central,49,IL
+H-00610,meta,Low Value,"Less than $250,000",cpc,Central,31,IL
+H-00611,bing,Low Value,"Less than $250,000",paid search,Central,98,TN
+H-00612,meta,Low Value,,prospecting,Mountain,36,CO
+H-00613,google,Ideal,"$500,000 to $999,999",rd,Central,25,TX
+H-00614,google,Unknown,"$5,000,000 to $9,999,999",rd,Eastern,23,MA
+H-00615,meta,Low Value,"$250,000 to $499,999",rd,Central,77,LA
+H-00616,google,Low Value,"Less than $250,000",rd,Central,23,TX
+H-00617,google,High Value,"$250,000 to $499,999",nonbrand,Central,100,IL
+H-00618,google,High Value,"$10,000,000 to $24,999,999",brand,Eastern,97,PA
+H-00619,meta,Low Value,Self-Serve Signup,nonbrand,Eastern,39,FL
+H-00620,google,Ideal,"Less than $250,000",rd,Central,71,TN
+H-00621,meta,Ideal,"$250,000 to $499,999",rd,Pacific,51,CA
+H-00622,meta,Ideal,"$1,000,000 to $4,999,999",rd,Arizona,44,AZ
+H-00623,bing,Low Value,"Less than $250,000",ppc,Central,28,MN
+H-00624,google,High Value,"$500,000 to $999,999",pmax,Eastern,72,MI
+H-00625,meta,High Value,"$1,000,000 to $4,999,999",nonbrand,Pacific,35,CA
+H-00626,google,Low Value,"$1,000,000 to $4,999,999",rd,Hawaii,61,HI
+H-00627,tiktok,Low Value,"Less than $250,000",rd,Eastern,28,GA
+H-00628,google,Low Value,"$5,000,000 to $9,999,999",nonbrand,Central,88,MN
+H-00629,google,Unknown,"$1,000,000 to $4,999,999",nonbrand,Eastern,46,NC
+H-00630,meta,Ideal,"Less than $250,000",organic social,Pacific,57,CA
+H-00631,meta,Low Value,,organic social,Central,15,TX
+H-00632,bing,Low Value,"Less than $250,000",rd,Eastern,42,PA
+H-00633,meta,High Value,"$500,000 to $999,999",rd,Central,19,LA
+H-00634,meta,Low Value,"Less than $250,000",retargeting,Pacific,41,CA
+H-00635,google,Ideal,"$250,000 to $499,999",cpc,Eastern,47,MA
+H-00636,google,Ideal,"$250,000 to $499,999",pmax,Central,28,LA
+H-00637,google,Low Value,"$250,000 to $499,999",organic search,Eastern,44,FL
+H-00638,meta,Low Value,"$250,000 to $499,999",prospecting,Eastern,100,VA
+H-00639,google,Unknown,"$500,000 to $999,999",organic search,Eastern,40,FL
+H-00640,google,Ideal,"$250,000 to $499,999",pmax,Pacific,99,WA
+H-00641,google,Ideal,"Less than $250,000",rd,Central,55,TX
+H-00642,meta,Low Value,,cpc,Eastern,0,NY
+H-00643,meta,Low Value,"Less than $250,000",rd,Pacific,28,CA
+H-00644,bing,Ideal,"Less than $250,000",rd,Eastern,51,FL
+H-00645,google,High Value,"Less than $250,000",rd,Mountain,17,CO
+H-00646,google,High Value,"$10,000,000 to $24,999,999",rd,Mountain,100,CO
+H-00647,meta,Low Value,"Less than $250,000",organic social,Eastern,53,FL
+H-00648,google,Low Value,"$1,000,000 to $4,999,999",nonbrand,Pacific,53,CA
+H-00649,google,Ideal,"$10,000,000 to $24,999,999",brand,Eastern,69,
+H-00650,google,Low Value,"$250,000 to $499,999",rd,Eastern,63,FL
+H-00651,meta,Low Value,"Less than $250,000",prospecting,Eastern,29,NJ
+H-00652,google,High Value,"$250,000 to $499,999",rd,Central,94,MN
+H-00653,google,Ideal,"Less than $250,000",cpc,Central,81,MN
+H-00654,meta,Low Value,"Less than $250,000",prospecting,Central,28,TX
+H-00655,tiktok,Unknown,"Less than $250,000",prospecting,Pacific,28,CA
+H-00656,google,Ideal,"$250,000 to $499,999",brand,Pacific,25,CA
+H-00657,meta,Low Value,"Less than $250,000",rd,Eastern,47,FL
+H-00658,google,Ideal,"Less than $250,000",ppc,Pacific,42,WA
+H-00659,google,Low Value,"$250,000 to $499,999",rd,Eastern,25,OH
+H-00660,meta,Ideal,"$250,000 to $499,999",cpc,Central,58,WI
+H-00661,bing,Low Value,"$500,000 to $999,999",rd,Central,44,IL
+H-00662,meta,High Value,"$5,000,000 to $9,999,999",prospecting,Eastern,75,NY
+H-00663,google,Ideal,"$500,000 to $999,999",retargeting,Pacific,39,WA
+H-00664,meta,Low Value,"Less than $250,000",rd,Eastern,60,GA
+H-00665,bing,Low Value,"$250,000 to $499,999",rd,Eastern,33,MI
+H-00666,google,Low Value,"$250,000 to $499,999",,Pacific,,CA
+H-00667,meta,Low Value,"$250,000 to $499,999",organic social,Eastern,32,GA
+H-00668,google,Low Value,"Less than $250,000",paid search,Eastern,35,NY
+H-00669,meta,Low Value,"$1,000,000 to $4,999,999",rd,Eastern,1,NY
+H-00670,google,Low Value,"$250,000 to $499,999",rd,Pacific,20,
+H-00671,meta,High Value,"Less than $250,000",prospecting,Eastern,76,FL
+H-00672,google,High Value,"$1,000,000 to $4,999,999",ppc,Pacific,,OR
+H-00673,google,High Value,"$500,000 to $999,999",nonbrand,Eastern,56,PA
+H-00674,google,Unknown,"Less than $250,000",,Eastern,36,MI
+H-00675,google,Low Value,,retargeting,Central,35,TX
+H-00676,google,Low Value,"$5,000,000 to $9,999,999",rd,Eastern,68,MI
+H-00677,google,High Value,"Less than $250,000",rd,Pacific,59,CA
+H-00678,meta,Ideal,"$250,000 to $499,999",organic social,Eastern,43,FL
+H-00679,meta,Low Value,"$250,000 to $499,999",rd,Eastern,3,VA
+H-00680,meta,Low Value,"$250,000 to $499,999",retargeting,Central,57,WI
+H-00681,bing,Unknown,"$250,000 to $499,999",brand,Pacific,57,OR
+H-00682,google,Ideal,"$1,000,000 to $4,999,999",brand,Eastern,50,FL
+H-00683,meta,Low Value,"Less than $250,000",prospecting,Central,25,TX
+H-00684,meta,Unknown,"Less than $250,000",rd,Pacific,34,WA
+H-00685,meta,Ideal,"$500,000 to $999,999",brand,Eastern,32,NY
+H-00686,meta,Low Value,"Less than $250,000",rd,Eastern,38,MA
+H-00687,google,High Value,"Less than $250,000",rd,Eastern,86,FL
+H-00688,google,Low Value,"Less than $250,000",rd,Central,,TX
+H-00689,google,Unknown,"$500,000 to $999,999",nonbrand,Arizona,,AZ
+H-00690,meta,Unknown,"Less than $250,000",brand,Eastern,5,MA
+H-00691,google,High Value,"$500,000 to $999,999",rd,Mountain,100,CO
+H-00692,google,Low Value,"$250,000 to $499,999",brand,Eastern,0,FL
+H-00693,google,Low Value,"$500,000 to $999,999",rd,,48,
+H-00694,meta,Ideal,"$5,000,000 to $9,999,999",pmax,Eastern,80,NJ
+H-00695,google,Ideal,"$500,000 to $999,999",rd,Pacific,100,CA
+H-00696,google,Low Value,"$500,000 to $999,999",rd,Eastern,28,NY
+H-00697,meta,High Value,"Less than $250,000",rd,Central,80,MO
+H-00698,google,High Value,"$5,000,000 to $9,999,999",nonbrand,Alaska,86,AK
+H-00699,bing,Low Value,"$1,000,000 to $4,999,999",rd,Pacific,0,CA
+H-00700,meta,Low Value,"Less than $250,000",prospecting,Eastern,49,FL
+H-00701,meta,Low Value,"$500,000 to $999,999",organic social,Eastern,54,MA
+H-00702,bing,Low Value,"Less than $250,000",cpc,Central,64,MN
+H-00703,google,High Value,"Less than $250,000",paid search,Pacific,64,CA
+H-00704,meta,Low Value,"Less than $250,000",retargeting,Eastern,43,NY
+H-00705,bing,Low Value,,nonbrand,Central,70,TX
+H-00706,tiktok,Low Value,"$250,000 to $499,999",pmax,Pacific,63,OR
+H-00707,google,Low Value,"$1,000,000 to $4,999,999",ppc,Eastern,84,NC
+H-00708,meta,Low Value,"Less than $250,000",prospecting,Pacific,24,NV
+H-00709,google,High Value,"$250,000 to $499,999",nonbrand,Alaska,,AK
+H-00710,google,Low Value,"Less than $250,000",pmax,Pacific,42,CA
+H-00711,bing,Ideal,"Less than $250,000",rd,Eastern,59,GA
+H-00712,meta,Low Value,"Less than $250,000",prospecting,Central,4,LA
+H-00713,google,Low Value,"$500,000 to $999,999",organic search,Central,52,TX
+H-00714,meta,Low Value,Self-Serve Signup,prospecting,Eastern,0,FL
+H-00715,tiktok,Low Value,"Less than $250,000",rd,Eastern,75,FL
+H-00716,tiktok,Low Value,"Less than $250,000",organic social,Pacific,65,CA
+H-00717,bing,Low Value,"$500,000 to $999,999",brand,Pacific,100,WA
+H-00718,bing,Low Value,"$5,000,000 to $9,999,999",rd,Pacific,74,NV
+H-00719,google,Unknown,"$250,000 to $499,999",ppc,Central,11,TX
+H-00720,google,Ideal,"$500,000 to $999,999",nonbrand,Eastern,44,MI
+H-00721,google,Low Value,"$500,000 to $999,999",rd,Central,60,IL
+H-00722,google,High Value,"$500,000 to $999,999",paid search,Eastern,85,FL
+H-00723,meta,Low Value,"Less than $250,000",rd,Central,76,TX
+H-00724,google,Low Value,"Less than $250,000",brand,Eastern,30,PA
+H-00725,meta,Low Value,"$250,000 to $499,999",brand,Eastern,28,MA
+H-00726,bing,High Value,"$1,000,000 to $4,999,999",rd,Eastern,80,NJ
+H-00727,meta,High Value,"$1,000,000 to $4,999,999",rd,Eastern,90,FL
+H-00728,bing,Low Value,"$500,000 to $999,999",ppc,Eastern,91,VA
+H-00729,google,Low Value,"$1,000,000 to $4,999,999",rd,Eastern,47,NC
+H-00730,bing,Low Value,"$500,000 to $999,999",retargeting,Eastern,40,VA
+H-00731,google,Ideal,"$250,000 to $499,999",pmax,Eastern,60,NC
+H-00732,meta,Low Value,"Less than $250,000",organic social,Eastern,22,MI
+H-00733,google,Low Value,"$500,000 to $999,999",rd,,39,
+H-00734,google,Low Value,"$500,000 to $999,999",prospecting,Pacific,47,CA
+H-00735,meta,Low Value,"$500,000 to $999,999",retargeting,Eastern,17,NJ
+H-00736,bing,Low Value,Self-Serve Signup,nonbrand,Pacific,26,CA
+H-00737,meta,Ideal,"Less than $250,000",rd,Eastern,,NY
+H-00738,meta,Low Value,"Less than $250,000",prospecting,Eastern,4,NY
+H-00739,google,Low Value,"Less than $250,000",brand,Eastern,52,FL
+H-00740,google,High Value,"$10,000,000 to $24,999,999",rd,Pacific,91,CA
+H-00741,google,High Value,"$500,000 to $999,999",rd,Pacific,38,WA
+H-00742,meta,Low Value,"$250,000 to $499,999",rd,Pacific,29,WA
+H-00743,google,High Value,"Less than $250,000",rd,Eastern,64,MA
+H-00744,meta,Unknown,"$1,000,000 to $4,999,999",rd,Eastern,74,PA
+H-00745,bing,Low Value,"Less than $250,000",nonbrand,Pacific,56,NV
+H-00746,meta,High Value,"$250,000 to $499,999",prospecting,,51,
+H-00747,tiktok,Low Value,Self-Serve Signup,organic social,Pacific,29,CA
+H-00748,google,High Value,"$5,000,000 to $9,999,999",ppc,Mountain,45,CO
+H-00749,google,Ideal,"Less than $250,000",rd,Eastern,39,FL
+H-00750,google,Ideal,"Less than $250,000",cpc,Eastern,52,MA
+H-00751,google,High Value,"$500,000 to $999,999",rd,Central,76,IL
+H-00752,meta,Ideal,"$1,000,000 to $4,999,999",prospecting,Pacific,63,NV
+H-00753,google,Ideal,"Less than $250,000",rd,Pacific,79,WA
+H-00754,google,High Value,"$250,000 to $499,999",rd,Central,69,TX
+H-00755,google,Low Value,"$250,000 to $499,999",rd,Eastern,34,GA
+H-00756,meta,Low Value,"Less than $250,000",retargeting,Eastern,46,NC
+H-00757,meta,Low Value,"Less than $250,000",organic social,Eastern,38,NY
+H-00758,meta,Ideal,"Less than $250,000",rd,Central,88,IL
+H-00759,google,Ideal,"$250,000 to $499,999",pmax,Eastern,65,NC
+H-00760,google,Low Value,"$500,000 to $999,999",rd,Arizona,49,AZ
+H-00761,tiktok,Ideal,"$1,000,000 to $4,999,999",rd,Hawaii,56,HI
+H-00762,google,Low Value,"$5,000,000 to $9,999,999",nonbrand,Pacific,54,CA
+H-00763,tiktok,Low Value,"Less than $250,000",rd,Central,43,IL
+H-00764,google,Ideal,"$1,000,000 to $4,999,999",nonbrand,Pacific,95,WA
+H-00765,google,Low Value,"$1,000,000 to $4,999,999",brand,Eastern,83,VA
+H-00766,meta,High Value,"Less than $250,000",retargeting,Eastern,37,OH
+H-00767,google,Ideal,"$10,000,000 to $24,999,999",rd,,44,
+H-00768,meta,Low Value,Self-Serve Signup,,Eastern,38,MA
+H-00769,bing,High Value,Self-Serve Signup,brand,Eastern,52,FL
+H-00770,google,High Value,"$500,000 to $999,999",pmax,Eastern,89,OH
+H-00771,google,High Value,"$250,000 to $499,999",rd,Eastern,58,FL
+H-00772,google,High Value,"$250,000 to $499,999",brand,Pacific,100,OR
+H-00773,meta,Ideal,"$250,000 to $499,999",rd,Mountain,27,CO
+H-00774,meta,Ideal,"$250,000 to $499,999",organic social,Central,14,IL
+H-00775,google,High Value,"$250,000 to $499,999",cpc,Central,100,LA
+H-00776,google,Low Value,"$5,000,000 to $9,999,999",organic search,Central,79,TX
+H-00777,google,Ideal,"$1,000,000 to $4,999,999",cpc,Mountain,94,CO
+H-00778,google,Ideal,"$500,000 to $999,999",prospecting,Mountain,100,MT
+H-00779,google,Low Value,"$250,000 to $499,999",rd,Eastern,33,FL
+H-00780,meta,Ideal,"$250,000 to $499,999",prospecting,Eastern,69,VA
+H-00781,google,Low Value,"Less than $250,000",pmax,Pacific,38,
+H-00782,meta,Low Value,"Less than $250,000",cpc,Central,85,TN
+H-00783,meta,Low Value,"Less than $250,000",retargeting,Pacific,3,CA
+H-00784,tiktok,Low Value,"Less than $250,000",organic social,Eastern,57,OH
+H-00785,google,High Value,"$10,000,000 to $24,999,999",rd,Eastern,73,FL
+H-00786,google,Low Value,"$250,000 to $499,999",pmax,Arizona,40,AZ
+H-00787,meta,Low Value,"Less than $250,000",rd,Mountain,55,MT
+H-00788,google,Low Value,"Less than $250,000",retargeting,Eastern,0,NY
+H-00789,google,High Value,"$1,000,000 to $4,999,999",brand,Central,78,TX
+H-00790,meta,Low Value,"$250,000 to $499,999",rd,Pacific,36,NV
+H-00791,bing,Low Value,"$500,000 to $999,999",cpc,Central,78,TX
+H-00792,google,Low Value,"Less than $250,000",ppc,Pacific,72,CA
+H-00793,google,High Value,"$10,000,000 to $24,999,999",rd,Pacific,70,CA
+H-00794,tiktok,Low Value,"Less than $250,000",rd,Central,68,TX
+H-00795,meta,Low Value,"$250,000 to $499,999",rd,Central,70,IL
+H-00796,meta,Low Value,"Less than $250,000",ppc,Eastern,40,PA
+H-00797,meta,Low Value,"$250,000 to $499,999",rd,Pacific,0,CA
+H-00798,meta,Ideal,"$500,000 to $999,999",rd,Pacific,45,OR
+H-00799,meta,Ideal,"Less than $250,000",organic social,Central,36,TX
+H-00800,google,Low Value,"$500,000 to $999,999",paid search,Eastern,38,PA
+H-00801,meta,Low Value,"Less than $250,000",rd,Eastern,76,GA
+H-00802,meta,Low Value,"$250,000 to $499,999",organic social,,,
+H-00803,google,Low Value,"Less than $250,000",rd,Pacific,27,CA
+H-00804,bing,High Value,"Less than $250,000",brand,Central,80,TX
+H-00805,google,High Value,"$250,000 to $499,999",rd,Eastern,,FL
+H-00806,meta,Low Value,"Less than $250,000",prospecting,Eastern,29,MA
+H-00807,bing,High Value,"$5,000,000 to $9,999,999",rd,Pacific,62,CA
+H-00808,meta,Low Value,"Less than $250,000",rd,Eastern,0,GA
+H-00809,google,High Value,"$1,000,000 to $4,999,999",brand,Central,77,TX
+H-00810,google,High Value,"$10,000,000 to $24,999,999",organic search,Pacific,61,CA
+H-00811,google,Ideal,"$500,000 to $999,999",brand,Eastern,74,MA
+H-00812,google,Ideal,"$500,000 to $999,999",,Eastern,72,PA
+H-00813,bing,Low Value,"Less than $250,000",rd,Pacific,77,CA
+H-00814,meta,Low Value,"Less than $250,000",rd,Pacific,52,CA
+H-00815,google,Low Value,"$1,000,000 to $4,999,999",rd,Eastern,80,GA
+H-00816,google,High Value,"$1,000,000 to $4,999,999",rd,Central,94,TX
+H-00817,meta,Unknown,"Less than $250,000",prospecting,Central,3,TX
+H-00818,google,Ideal,"$1,000,000 to $4,999,999",brand,Pacific,75,CA
+H-00819,meta,Low Value,"$10,000,000 to $24,999,999",rd,Pacific,43,CA
+H-00820,google,High Value,"$500,000 to $999,999",rd,Central,60,WI
+H-00821,google,Unknown,,,Central,84,LA
+H-00822,meta,High Value,"$1,000,000 to $4,999,999",rd,Mountain,95,MT
+H-00823,meta,Ideal,"Less than $250,000",retargeting,Central,51,LA
+H-00824,meta,Ideal,"$1,000,000 to $4,999,999",retargeting,Arizona,100,AZ
+H-00825,google,Ideal,"Less than $250,000",cpc,Eastern,61,NC
+H-00826,meta,Low Value,"Less than $250,000",rd,Central,87,WI
+H-00827,bing,Ideal,"$500,000 to $999,999",rd,Mountain,71,CO
+H-00828,meta,Low Value,"$500,000 to $999,999",prospecting,Pacific,18,CA
+H-00829,tiktok,Low Value,"$500,000 to $999,999",rd,Eastern,26,GA
+H-00830,google,Unknown,"$1,000,000 to $4,999,999",cpc,,40,
+H-00831,bing,Low Value,"$1,000,000 to $4,999,999",nonbrand,Central,37,IL
+H-00832,tiktok,Low Value,,retargeting,Pacific,53,OR
+H-00833,bing,High Value,"$250,000 to $499,999",organic search,Pacific,42,CA
+H-00834,google,High Value,"$5,000,000 to $9,999,999",rd,Pacific,69,CA
+H-00835,meta,Unknown,"$500,000 to $999,999",brand,Eastern,68,GA
+H-00836,meta,High Value,"Less than $250,000",rd,Pacific,79,CA
+H-00837,meta,Ideal,"Less than $250,000",brand,Pacific,65,CA
+H-00838,tiktok,Low Value,"Less than $250,000",retargeting,Central,0,TX
+H-00839,google,Ideal,"$1,000,000 to $4,999,999",nonbrand,Central,81,IL
+H-00840,google,Low Value,"Less than $250,000",cpc,Eastern,0,PA
+H-00841,meta,Unknown,"$500,000 to $999,999",nonbrand,Eastern,54,MI
+H-00842,tiktok,High Value,"$250,000 to $499,999",,Pacific,94,WA
+H-00843,google,Low Value,"$5,000,000 to $9,999,999",rd,Eastern,28,GA
+H-00844,google,Low Value,"$500,000 to $999,999",rd,Eastern,23,NY
+H-00845,bing,High Value,"Less than $250,000",cpc,Eastern,53,PA
+H-00846,google,Ideal,,brand,Central,7,MO
+H-00847,meta,Ideal,"Less than $250,000",organic social,Alaska,30,AK
+H-00848,google,Low Value,"Less than $250,000",organic search,Pacific,23,CA
+H-00849,meta,Low Value,"$250,000 to $499,999",rd,,41,
+H-00850,google,Ideal,"$10,000,000 to $24,999,999",brand,Pacific,36,WA
+H-00851,google,Unknown,"$1,000,000 to $4,999,999",organic search,Mountain,100,MT
+H-00852,bing,High Value,"$1,000,000 to $4,999,999",rd,Central,89,IL
+H-00853,meta,Low Value,"$10,000,000 to $24,999,999",paid search,Pacific,21,CA
+H-00854,meta,Ideal,"$1,000,000 to $4,999,999",nonbrand,Eastern,29,
+H-00855,google,High Value,"Less than $250,000",rd,Central,58,IL
+H-00856,meta,Ideal,"$500,000 to $999,999",rd,Eastern,75,MA
+H-00857,meta,Low Value,"$250,000 to $499,999",organic social,Mountain,89,MT
+H-00858,meta,Low Value,"$250,000 to $499,999",rd,Central,19,MO
+H-00859,meta,Low Value,"Less than $250,000",prospecting,Eastern,43,FL
+H-00860,meta,Low Value,"$500,000 to $999,999",retargeting,Eastern,2,GA
+H-00861,google,High Value,"$250,000 to $499,999",,Mountain,62,CO
+H-00862,meta,Ideal,"$250,000 to $499,999",rd,Central,72,TX
+H-00863,google,High Value,"Less than $250,000",cpc,Eastern,81,FL
+H-00864,bing,Low Value,"Less than $250,000",paid search,Pacific,32,NV
+H-00865,google,Low Value,,brand,Arizona,,AZ
+H-00866,google,High Value,"$1,000,000 to $4,999,999",pmax,Pacific,100,CA
+H-00867,google,High Value,"$1,000,000 to $4,999,999",brand,Central,64,MN
+H-00868,google,Unknown,"$5,000,000 to $9,999,999",brand,Eastern,83,PA
+H-00869,meta,Low Value,,organic social,,15,
+H-00870,google,High Value,"$1,000,000 to $4,999,999",cpc,Eastern,45,NY
+H-00871,google,Low Value,"$250,000 to $499,999",rd,Mountain,,CO
+H-00872,google,High Value,"$5,000,000 to $9,999,999",nonbrand,Eastern,69,NJ
+H-00873,google,Unknown,"$1,000,000 to $4,999,999",brand,Central,33,IL
+H-00874,google,Ideal,"$5,000,000 to $9,999,999",brand,,66,
+H-00875,bing,Low Value,"Less than $250,000",rd,Eastern,68,FL
+H-00876,bing,Unknown,"$5,000,000 to $9,999,999",organic search,Eastern,61,GA
+H-00877,google,Ideal,"$250,000 to $499,999",rd,Eastern,86,NY
+H-00878,google,Low Value,"$5,000,000 to $9,999,999",cpc,Pacific,100,OR
+H-00879,google,Low Value,"$250,000 to $499,999",organic search,Central,25,IL
+H-00880,tiktok,Low Value,"Less than $250,000",rd,Pacific,61,CA
+H-00881,meta,Low Value,"Less than $250,000",rd,Eastern,29,MI
+H-00882,bing,High Value,"$500,000 to $999,999",cpc,Mountain,66,UT
+H-00883,tiktok,Low Value,"$250,000 to $499,999",ppc,Pacific,46,OR
+H-00884,google,Ideal,"$1,000,000 to $4,999,999",brand,Central,36,IL
+H-00885,google,Low Value,Self-Serve Signup,rd,Eastern,0,MA
+H-00886,google,Low Value,"$1,000,000 to $4,999,999",rd,,,
+H-00887,google,Low Value,"$500,000 to $999,999",rd,Mountain,57,CO
+H-00888,google,Unknown,"$5,000,000 to $9,999,999",nonbrand,Mountain,,MT
+H-00889,meta,Ideal,"Less than $250,000",organic social,Pacific,54,CA
+H-00890,meta,Unknown,"$250,000 to $499,999",retargeting,Eastern,58,FL
+H-00891,google,Ideal,"$250,000 to $499,999",brand,Central,85,MO
+H-00892,tiktok,Ideal,"$250,000 to $499,999",retargeting,Pacific,,CA
+H-00893,meta,Ideal,"Less than $250,000",rd,Eastern,0,FL
+H-00894,google,Low Value,"$500,000 to $999,999",brand,Eastern,47,MA
+H-00895,meta,High Value,"$250,000 to $499,999",rd,,41,
+H-00896,google,High Value,"$250,000 to $499,999",rd,Central,64,MN
+H-00897,google,Low Value,"Less than $250,000",rd,Pacific,24,CA
+H-00898,google,Ideal,"$500,000 to $999,999",rd,Eastern,100,OH
+H-00899,google,Low Value,"$250,000 to $499,999",nonbrand,Central,51,TX
+H-00900,meta,Low Value,Self-Serve Signup,rd,Eastern,5,MA
+H-00901,google,High Value,"$500,000 to $999,999",brand,Pacific,72,CA
+H-00902,meta,Low Value,"Less than $250,000",rd,Pacific,5,OR
+H-00903,meta,Low Value,"$250,000 to $499,999",retargeting,Central,16,IL
+H-00904,google,High Value,"$1,000,000 to $4,999,999",rd,Mountain,77,CO
+H-00905,google,Ideal,"$250,000 to $499,999",rd,Eastern,46,VA
+H-00906,tiktok,Low Value,"$5,000,000 to $9,999,999",rd,Eastern,53,GA
+H-00907,google,Low Value,"$1,000,000 to $4,999,999",paid search,Eastern,32,PA
+H-00908,meta,Low Value,"$250,000 to $499,999",retargeting,Eastern,38,NC
+H-00909,google,High Value,"$10,000,000 to $24,999,999",brand,Eastern,71,FL
+H-00910,tiktok,Low Value,"Less than $250,000",prospecting,Pacific,68,WA
+H-00911,tiktok,Low Value,"$250,000 to $499,999",prospecting,Pacific,69,CA
+H-00912,bing,Low Value,Self-Serve Signup,ppc,Eastern,63,FL
+H-00913,google,Ideal,"Less than $250,000",rd,Eastern,59,FL
+H-00914,meta,Low Value,"Less than $250,000",rd,Pacific,34,CA
+H-00915,meta,Low Value,"$500,000 to $999,999",prospecting,Central,50,TX
+H-00916,bing,Ideal,"$1,000,000 to $4,999,999",nonbrand,Eastern,100,OH
+H-00917,tiktok,Ideal,"$250,000 to $499,999",organic social,Pacific,34,CA
+H-00918,google,Unknown,"$500,000 to $999,999",rd,Eastern,15,NC
+H-00919,meta,High Value,"Less than $250,000",prospecting,Central,35,TX
+H-00920,meta,Low Value,"$500,000 to $999,999",rd,,35,
+H-00921,google,Ideal,,rd,Mountain,55,MT
+H-00922,bing,Low Value,"$5,000,000 to $9,999,999",ppc,Mountain,100,CO
+H-00923,google,High Value,"$1,000,000 to $4,999,999",rd,Central,87,
+H-00924,bing,Low Value,"Less than $250,000",cpc,Central,41,LA
+H-00925,google,High Value,"Less than $250,000",rd,Pacific,24,OR
+H-00926,meta,Low Value,"Less than $250,000",,Mountain,54,CO
+H-00927,meta,Ideal,Self-Serve Signup,retargeting,Eastern,49,PA
+H-00928,tiktok,Ideal,"$250,000 to $499,999",retargeting,Pacific,49,CA
+H-00929,google,Low Value,"$250,000 to $499,999",rd,Pacific,50,CA
+H-00930,meta,Ideal,,prospecting,Eastern,58,GA
+H-00931,google,High Value,"$500,000 to $999,999",nonbrand,Central,46,TX
+H-00932,bing,Ideal,,nonbrand,Eastern,88,MA
+H-00933,bing,High Value,"$1,000,000 to $4,999,999",rd,Eastern,68,MA
+H-00934,google,High Value,"Less than $250,000",nonbrand,Eastern,0,NY
+H-00935,google,High Value,"$500,000 to $999,999",rd,Eastern,,FL
+H-00936,meta,Low Value,"$500,000 to $999,999",prospecting,Eastern,39,GA
+H-00937,meta,Low Value,"Less than $250,000",rd,Pacific,30,CA
+H-00938,google,Low Value,"Less than $250,000",pmax,Eastern,47,GA
+H-00939,tiktok,Ideal,"Less than $250,000",retargeting,Central,38,IL
+H-00940,meta,Low Value,"$250,000 to $499,999",prospecting,Central,32,MN
+H-00941,google,Ideal,"$1,000,000 to $4,999,999",rd,Central,93,MO
+H-00942,tiktok,Ideal,"$500,000 to $999,999",retargeting,Hawaii,5,HI
+H-00943,meta,Ideal,"$500,000 to $999,999",prospecting,Mountain,31,UT
+H-00944,meta,Low Value,Self-Serve Signup,organic social,Central,14,TX
+H-00945,google,Low Value,"Less than $250,000",cpc,Alaska,90,AK
+H-00946,google,Low Value,"Less than $250,000",rd,Eastern,1,NY
+H-00947,meta,Low Value,Self-Serve Signup,rd,Pacific,0,CA
+H-00948,bing,Ideal,"Less than $250,000",,Central,18,TX
+H-00949,meta,Low Value,"Less than $250,000",,Eastern,66,PA
+H-00950,google,Low Value,"Less than $250,000",rd,Central,27,IL
+H-00951,google,Unknown,"$500,000 to $999,999",organic search,Central,44,IL
+H-00952,bing,Low Value,"Less than $250,000",brand,Mountain,71,UT
+H-00953,bing,Low Value,"$500,000 to $999,999",rd,Pacific,38,WA
+H-00954,tiktok,High Value,"$250,000 to $499,999",prospecting,Eastern,82,VA
+H-00955,google,Ideal,"$500,000 to $999,999",nonbrand,Pacific,73,
+H-00956,google,Ideal,"$250,000 to $499,999",rd,,93,
+H-00957,meta,Ideal,"$250,000 to $499,999",retargeting,Eastern,30,MI
+H-00958,meta,Low Value,"Less than $250,000",pmax,Pacific,20,OR
+H-00959,google,Low Value,"$1,000,000 to $4,999,999",brand,Eastern,27,GA
+H-00960,google,Low Value,"Less than $250,000",cpc,Eastern,12,NY
+H-00961,google,Low Value,"Less than $250,000",brand,Central,3,TX
+H-00962,meta,Ideal,"$250,000 to $499,999",prospecting,Pacific,85,CA
+H-00963,tiktok,Low Value,"$500,000 to $999,999",prospecting,Eastern,0,MA
+H-00964,google,High Value,"$10,000,000 to $24,999,999",rd,Arizona,21,AZ
+H-00965,google,Low Value,,brand,Eastern,27,MI
+H-00966,google,Ideal,"$5,000,000 to $9,999,999",nonbrand,,77,
+H-00967,google,Ideal,"$250,000 to $499,999",brand,Eastern,92,NY
+H-00968,meta,Low Value,"Less than $250,000",organic social,Eastern,11,MA
+H-00969,tiktok,Ideal,"$500,000 to $999,999",,Pacific,69,NV
+H-00970,google,High Value,"$1,000,000 to $4,999,999",brand,Arizona,100,AZ
+H-00971,bing,Ideal,"Less than $250,000",nonbrand,Central,24,MN
+H-00972,google,High Value,"$5,000,000 to $9,999,999",rd,Eastern,68,GA
+H-00973,bing,Low Value,"$500,000 to $999,999",organic search,Central,,TX
+H-00974,google,Ideal,"$250,000 to $499,999",rd,Arizona,44,AZ
+H-00975,tiktok,Low Value,"Less than $250,000",rd,Eastern,14,NC
+H-00976,meta,Low Value,"Less than $250,000",rd,Eastern,49,NY
+H-00977,google,Ideal,"$10,000,000 to $24,999,999",rd,Pacific,79,WA
+H-00978,tiktok,Ideal,"$250,000 to $499,999",,Eastern,26,NJ
+H-00979,google,High Value,"$250,000 to $499,999",rd,Central,79,TN
+H-00980,meta,Low Value,Self-Serve Signup,rd,Central,0,IL
+H-00981,google,High Value,"$10,000,000 to $24,999,999",nonbrand,Eastern,34,NJ
+H-00982,meta,Low Value,"Less than $250,000",prospecting,Pacific,47,OR
+H-00983,google,Unknown,"$500,000 to $999,999",cpc,Central,100,MO
+H-00984,google,High Value,"$10,000,000 to $24,999,999",rd,Eastern,100,NY
+H-00985,meta,Ideal,"Less than $250,000",prospecting,Eastern,34,NY
+H-00986,tiktok,Low Value,Self-Serve Signup,rd,Eastern,45,OH
+H-00987,google,Low Value,"Less than $250,000",ppc,Central,53,TN
+H-00988,tiktok,Low Value,"Less than $250,000",retargeting,Pacific,2,CA
+H-00989,google,Low Value,"Less than $250,000",pmax,Central,47,TX
+H-00990,meta,Ideal,"$250,000 to $499,999",rd,Central,18,WI
+H-00991,meta,Low Value,"Less than $250,000",organic social,Pacific,0,WA
+H-00992,meta,Low Value,"Less than $250,000",rd,Central,83,LA
+H-00993,google,Ideal,"$250,000 to $499,999",brand,Eastern,57,NC
+H-00994,meta,Low Value,Self-Serve Signup,cpc,Pacific,15,CA
+H-00995,meta,Low Value,"Less than $250,000",rd,Eastern,90,OH
+H-00996,google,High Value,"$5,000,000 to $9,999,999",rd,Central,100,IL
+H-00997,meta,Ideal,"$10,000,000 to $24,999,999",nonbrand,Mountain,60,CO
+H-00998,google,Ideal,"Less than $250,000",paid search,Central,34,TN
+H-00999,google,Ideal,"$250,000 to $499,999",paid search,Mountain,94,UT
+H-01000,google,High Value,"$500,000 to $999,999",brand,Central,88,WI
+H-01001,meta,Low Value,"Less than $250,000",organic social,Central,8,WI
+H-01002,tiktok,Low Value,,rd,Hawaii,77,HI
+H-01003,meta,Low Value,"Less than $250,000",rd,Pacific,28,OR
+H-01004,meta,Low Value,"Less than $250,000",retargeting,Eastern,42,NC
+H-01005,google,Low Value,"$500,000 to $999,999",nonbrand,Eastern,7,NJ
+H-01006,bing,High Value,"Less than $250,000",retargeting,Eastern,71,NY
+H-01007,meta,Low Value,"$1,000,000 to $4,999,999",rd,Eastern,81,MA
+H-01008,meta,Low Value,"Less than $250,000",nonbrand,Pacific,36,WA
+H-01009,google,High Value,"$500,000 to $999,999",pmax,Eastern,87,PA
+H-01010,tiktok,Low Value,"$5,000,000 to $9,999,999",rd,Eastern,52,PA
+H-01011,meta,Low Value,"$250,000 to $499,999",prospecting,Eastern,0,PA
+H-01012,tiktok,Low Value,"Less than $250,000",prospecting,,34,
+H-01013,meta,Ideal,"Less than $250,000",cpc,Eastern,59,OH
+H-01014,google,Low Value,,rd,Pacific,23,WA
+H-01015,bing,Low Value,"$500,000 to $999,999",ppc,Eastern,31,FL
+H-01016,meta,Low Value,"Less than $250,000",organic social,Eastern,0,PA
+H-01017,meta,Low Value,"Less than $250,000",paid search,Eastern,11,MI
+H-01018,meta,Low Value,"$250,000 to $499,999",rd,Eastern,79,FL
+H-01019,meta,Low Value,"$250,000 to $499,999",prospecting,Mountain,42,MT
+H-01020,meta,Low Value,"$1,000,000 to $4,999,999",retargeting,Pacific,37,OR
+H-01021,google,Ideal,"Less than $250,000",organic search,Pacific,57,CA
+H-01022,meta,Low Value,"$5,000,000 to $9,999,999",retargeting,Pacific,71,CA
+H-01023,google,Low Value,"Less than $250,000",retargeting,Pacific,25,CA
+H-01024,tiktok,Low Value,"$500,000 to $999,999",prospecting,Central,42,IL
+H-01025,google,Low Value,"Less than $250,000",nonbrand,Central,,MO
+H-01026,meta,Ideal,,prospecting,Central,63,LA
+H-01027,google,High Value,"Less than $250,000",brand,Eastern,87,FL
+H-01028,google,Ideal,"$250,000 to $499,999",rd,Central,31,TX
+H-01029,meta,Low Value,"$250,000 to $499,999",rd,Central,38,TX
+H-01030,google,Ideal,Self-Serve Signup,,Eastern,25,PA
+H-01031,meta,Ideal,,rd,Pacific,98,OR
+H-01032,meta,Low Value,"$5,000,000 to $9,999,999",rd,Mountain,100,CO
+H-01033,google,Ideal,,brand,Central,46,IL
+H-01034,google,Low Value,"$250,000 to $499,999",rd,Pacific,65,OR
+H-01035,meta,High Value,"Less than $250,000",rd,,15,
+H-01036,tiktok,Low Value,"Less than $250,000",organic social,Eastern,57,FL
+H-01037,tiktok,Low Value,"Less than $250,000",rd,Mountain,0,UT
+H-01038,google,Low Value,"$1,000,000 to $4,999,999",rd,Pacific,35,WA
+H-01039,tiktok,Low Value,"Less than $250,000",rd,Central,22,TX
+H-01040,tiktok,Low Value,,retargeting,Eastern,71,NJ
+H-01041,tiktok,Ideal,"Less than $250,000",organic social,Central,75,IL
+H-01042,meta,High Value,"$1,000,000 to $4,999,999",organic social,Eastern,45,PA
+H-01043,meta,Low Value,"$500,000 to $999,999",retargeting,Eastern,39,NJ
+H-01044,google,Ideal,"$1,000,000 to $4,999,999",brand,,29,
+H-01045,google,Ideal,"Less than $250,000",cpc,Eastern,47,NY
+H-01046,tiktok,High Value,"$1,000,000 to $4,999,999",retargeting,Eastern,90,FL
+H-01047,bing,Low Value,"$250,000 to $499,999",rd,Pacific,35,CA
+H-01048,google,High Value,"$5,000,000 to $9,999,999",rd,Central,22,TX
+H-01049,bing,High Value,"$250,000 to $499,999",brand,Central,100,TX
+H-01050,tiktok,Low Value,"$1,000,000 to $4,999,999",rd,,20,
+H-01051,tiktok,High Value,"Less than $250,000",rd,Eastern,42,NJ
+H-01052,meta,Low Value,"Less than $250,000",rd,Eastern,15,NC
+H-01053,google,Low Value,,rd,Pacific,36,CA
+H-01054,bing,Unknown,"$250,000 to $499,999",paid search,Eastern,51,OH
+H-01055,meta,Low Value,Self-Serve Signup,prospecting,Central,13,IL
+H-01056,bing,High Value,"$5,000,000 to $9,999,999",rd,Eastern,71,NC
+H-01057,google,Ideal,"$250,000 to $499,999",rd,Eastern,63,NJ
+H-01058,google,High Value,"$500,000 to $999,999",nonbrand,Mountain,57,MT
+H-01059,meta,High Value,"$250,000 to $499,999",prospecting,Pacific,51,OR
+H-01060,meta,Ideal,"$250,000 to $499,999",organic social,Central,72,TX
+H-01061,google,Ideal,"Less than $250,000",pmax,Central,90,IL
+H-01062,google,Low Value,"$5,000,000 to $9,999,999",rd,Central,76,MN
+H-01063,meta,Low Value,"$500,000 to $999,999",cpc,Central,67,MN
+H-01064,meta,Low Value,"$250,000 to $499,999",prospecting,Eastern,47,MI
+H-01065,tiktok,Low Value,"Less than $250,000",prospecting,Eastern,0,OH
+H-01066,tiktok,High Value,"$10,000,000 to $24,999,999",rd,Pacific,53,WA
+H-01067,meta,Low Value,"Less than $250,000",rd,Eastern,56,PA
+H-01068,meta,High Value,"$250,000 to $499,999",prospecting,Eastern,26,OH
+H-01069,meta,Low Value,Self-Serve Signup,retargeting,Eastern,34,GA
+H-01070,google,Low Value,"$1,000,000 to $4,999,999",rd,Eastern,39,PA
+H-01071,bing,Low Value,"$250,000 to $499,999",ppc,Eastern,,VA
+H-01072,google,High Value,,brand,Central,100,LA
+H-01073,meta,Low Value,"$250,000 to $499,999",rd,Eastern,22,FL
+H-01074,tiktok,Low Value,"Less than $250,000",rd,Eastern,62,NC
+H-01075,meta,High Value,"Less than $250,000",rd,Central,30,TN
+H-01076,meta,Low Value,Self-Serve Signup,prospecting,Central,8,TX
+H-01077,google,Low Value,"Less than $250,000",brand,Central,31,TX
+H-01078,google,Low Value,"$500,000 to $999,999",paid search,Eastern,67,FL
+H-01079,meta,Ideal,"Less than $250,000",rd,Eastern,63,MI
+H-01080,meta,Low Value,"$250,000 to $499,999",rd,Eastern,2,GA
+H-01081,meta,High Value,"$5,000,000 to $9,999,999",prospecting,Pacific,88,OR
+H-01082,google,Ideal,"Less than $250,000",rd,Eastern,64,PA
+H-01083,google,Ideal,"Less than $250,000",rd,Eastern,67,MI
+H-01084,google,High Value,"$500,000 to $999,999",prospecting,Eastern,81,GA
+H-01085,google,Low Value,"$250,000 to $499,999",rd,Central,50,IL
+H-01086,tiktok,Ideal,Self-Serve Signup,rd,Central,33,IL
+H-01087,google,Ideal,"$1,000,000 to $4,999,999",nonbrand,Eastern,77,NJ
+H-01088,google,Low Value,"$250,000 to $499,999",organic search,Eastern,14,PA
+H-01089,google,Low Value,"$5,000,000 to $9,999,999",organic search,Central,0,MO
+H-01090,tiktok,Ideal,"$250,000 to $499,999",organic social,Eastern,31,FL
+H-01091,meta,High Value,"$5,000,000 to $9,999,999",retargeting,Pacific,57,WA
+H-01092,google,Low Value,"$5,000,000 to $9,999,999",rd,Mountain,,UT
+H-01093,meta,Low Value,"Less than $250,000",organic social,Eastern,48,NY
+H-01094,google,Ideal,"$1,000,000 to $4,999,999",paid search,Pacific,50,NV
+H-01095,bing,High Value,"$10,000,000 to $24,999,999",rd,Pacific,43,CA
+H-01096,tiktok,Low Value,"$250,000 to $499,999",retargeting,Pacific,83,NV
+H-01097,google,Low Value,"Less than $250,000",rd,Mountain,,CO
+H-01098,meta,Low Value,,prospecting,Eastern,22,NY
+H-01099,meta,Ideal,"$250,000 to $499,999",rd,Eastern,97,OH
+H-01100,google,Low Value,"$250,000 to $499,999",rd,Pacific,57,WA
+H-01101,meta,Unknown,"$1,000,000 to $4,999,999",nonbrand,Central,29,IL
+H-01102,tiktok,Low Value,,organic social,Eastern,0,VA
+H-01103,google,Ideal,"$500,000 to $999,999",nonbrand,Eastern,74,GA
+H-01104,google,Low Value,"$250,000 to $499,999",pmax,Central,23,TN
+H-01105,meta,Ideal,"Less than $250,000",prospecting,Pacific,82,WA
+H-01106,google,High Value,"Less than $250,000",nonbrand,Eastern,87,NC
+H-01107,meta,Low Value,Self-Serve Signup,organic social,Arizona,20,AZ
+H-01108,bing,Unknown,"$5,000,000 to $9,999,999",pmax,Eastern,20,NY
+H-01109,google,Ideal,"Less than $250,000",brand,Central,0,TX
+H-01110,google,Low Value,Self-Serve Signup,rd,Pacific,6,WA
+H-01111,meta,High Value,"Less than $250,000",organic social,Pacific,0,CA
+H-01112,bing,Low Value,,rd,Eastern,62,FL
+H-01113,google,Low Value,"$250,000 to $499,999",rd,Eastern,,FL
+H-01114,google,Low Value,"Less than $250,000",cpc,Alaska,32,AK
+H-01115,tiktok,Unknown,"Less than $250,000",rd,Eastern,49,VA
+H-01116,google,Low Value,"$1,000,000 to $4,999,999",pmax,Central,46,WI
+H-01117,google,High Value,"$250,000 to $499,999",organic search,Mountain,70,CO
+H-01118,tiktok,Low Value,"$1,000,000 to $4,999,999",prospecting,Eastern,58,NJ
+H-01119,google,Ideal,"$1,000,000 to $4,999,999",brand,Eastern,54,NC
+H-01120,google,Low Value,"$500,000 to $999,999",retargeting,Eastern,25,MA
+H-01121,meta,Low Value,"$1,000,000 to $4,999,999",organic social,Eastern,55,NY
+H-01122,meta,Low Value,"Less than $250,000",organic social,Arizona,59,AZ
+H-01123,google,Low Value,"$250,000 to $499,999",rd,Eastern,73,NY
+H-01124,meta,Low Value,"Less than $250,000",rd,Eastern,21,FL
+H-01125,bing,Ideal,"$1,000,000 to $4,999,999",rd,Eastern,98,FL
+H-01126,google,Low Value,"$1,000,000 to $4,999,999",rd,Central,47,IL
+H-01127,tiktok,Low Value,,prospecting,Pacific,,OR
+H-01128,meta,Low Value,"Less than $250,000",organic social,,53,
+H-01129,tiktok,Low Value,"Less than $250,000",rd,Mountain,4,UT
+H-01130,meta,Ideal,,rd,Pacific,41,CA
+H-01131,google,Ideal,"$1,000,000 to $4,999,999",rd,Pacific,80,OR
+H-01132,meta,Low Value,"$1,000,000 to $4,999,999",prospecting,Eastern,59,NY
+H-01133,google,Ideal,"$500,000 to $999,999",cpc,Central,100,IL
+H-01134,google,Unknown,"$1,000,000 to $4,999,999",nonbrand,Alaska,49,
+H-01135,meta,Low Value,"Less than $250,000",retargeting,Central,83,TX
+H-01136,bing,Low Value,"Less than $250,000",paid search,Central,17,TN
+H-01137,meta,Unknown,"Less than $250,000",retargeting,Central,98,IL
+H-01138,meta,Low Value,"Less than $250,000",rd,Eastern,3,MA
+H-01139,tiktok,Ideal,"$500,000 to $999,999",,Mountain,67,CO
+H-01140,meta,Low Value,"Less than $250,000",ppc,Eastern,60,OH
+H-01141,meta,Unknown,Self-Serve Signup,organic social,Eastern,4,NJ
+H-01142,bing,High Value,"Less than $250,000",retargeting,Pacific,0,CA
+H-01143,meta,Low Value,"Less than $250,000",rd,Eastern,30,GA
+H-01144,meta,Low Value,"$250,000 to $499,999",retargeting,Central,0,IL
+H-01145,meta,Ideal,,prospecting,Central,75,
+H-01146,tiktok,Low Value,"Less than $250,000",prospecting,Pacific,57,CA
+H-01147,google,Low Value,"Less than $250,000",paid search,Central,73,LA
+H-01148,google,High Value,"$250,000 to $499,999",brand,Eastern,37,FL
+H-01149,meta,Unknown,"$500,000 to $999,999",retargeting,Central,99,WI
+H-01150,google,Low Value,"$500,000 to $999,999",brand,Arizona,20,AZ
+H-01151,google,Low Value,"$1,000,000 to $4,999,999",rd,Eastern,73,PA
+H-01152,google,Ideal,"$1,000,000 to $4,999,999",rd,Eastern,75,NJ
+H-01153,meta,Low Value,"Less than $250,000",nonbrand,Arizona,50,AZ
+H-01154,meta,Low Value,"Less than $250,000",brand,Eastern,25,FL
+H-01155,meta,Ideal,"Less than $250,000",prospecting,Eastern,0,FL
+H-01156,google,High Value,"$1,000,000 to $4,999,999",nonbrand,Arizona,71,AZ
+H-01157,tiktok,High Value,"Less than $250,000",prospecting,Eastern,,GA
+H-01158,google,Low Value,"Less than $250,000",brand,Central,41,IL
+H-01159,tiktok,Low Value,Self-Serve Signup,prospecting,Hawaii,24,HI
+H-01160,google,Low Value,"Less than $250,000",ppc,Central,75,TX
+H-01161,meta,Unknown,"$5,000,000 to $9,999,999",prospecting,Pacific,70,WA
+H-01162,google,Ideal,"$500,000 to $999,999",brand,Central,94,TX
+H-01163,tiktok,Low Value,"Less than $250,000",retargeting,Pacific,61,CA
+H-01164,tiktok,High Value,"Less than $250,000",organic social,Eastern,49,NJ
+H-01165,tiktok,Low Value,"$250,000 to $499,999",rd,Eastern,100,OH
+H-01166,meta,Low Value,"$250,000 to $499,999",rd,Eastern,10,GA
+H-01167,meta,Low Value,"$250,000 to $499,999",prospecting,Pacific,79,CA
+H-01168,meta,Low Value,"Less than $250,000",rd,Mountain,39,CO
+H-01169,bing,Unknown,"$10,000,000 to $24,999,999",rd,Pacific,69,CA
+H-01170,google,Ideal,"$5,000,000 to $9,999,999",rd,Mountain,12,UT
+H-01171,google,Low Value,"$5,000,000 to $9,999,999",brand,Eastern,76,NY
+H-01172,google,Low Value,"Less than $250,000",rd,Pacific,0,CA
+H-01173,tiktok,Low Value,"Less than $250,000",organic social,Eastern,38,NY
+H-01174,meta,Low Value,"Less than $250,000",rd,Central,29,MN
+H-01175,tiktok,Low Value,"$5,000,000 to $9,999,999",retargeting,Eastern,21,MI
+H-01176,google,Low Value,"Less than $250,000",brand,Central,22,MO
+H-01177,google,Ideal,"$250,000 to $499,999",brand,Central,0,IL
+H-01178,google,High Value,"$1,000,000 to $4,999,999",pmax,Central,81,MO
+H-01179,meta,High Value,"Less than $250,000",organic social,Eastern,72,VA
+H-01180,bing,High Value,"$10,000,000 to $24,999,999",ppc,Central,,TX
+H-01181,meta,Low Value,"$1,000,000 to $4,999,999",retargeting,Eastern,22,FL
+H-01182,tiktok,Low Value,"Less than $250,000",rd,Eastern,44,NJ
+H-01183,bing,High Value,"$250,000 to $499,999",rd,Arizona,66,AZ
+H-01184,meta,Low Value,"$250,000 to $499,999",organic social,Central,0,TX
+H-01185,google,Low Value,"Less than $250,000",brand,Central,62,TX
+H-01186,bing,Ideal,"Less than $250,000",rd,Central,67,TX
+H-01187,bing,Low Value,"$500,000 to $999,999",brand,Central,32,TX
+H-01188,meta,Ideal,"Less than $250,000",prospecting,Eastern,0,NJ
+H-01189,meta,Ideal,"Less than $250,000",rd,Eastern,72,FL
+H-01190,tiktok,Low Value,"$500,000 to $999,999",prospecting,Central,67,MN
+H-01191,google,Low Value,"Less than $250,000",rd,Eastern,36,
+H-01192,tiktok,Unknown,"Less than $250,000",rd,Pacific,0,OR
+H-01193,meta,Ideal,"$250,000 to $499,999",rd,Pacific,37,CA
+H-01194,meta,Low Value,"$500,000 to $999,999",rd,Eastern,26,NY
+H-01195,meta,Ideal,"Less than $250,000",prospecting,Mountain,50,CO
+H-01196,meta,High Value,"$250,000 to $499,999",retargeting,Eastern,38,OH
+H-01197,meta,Ideal,"Less than $250,000",rd,Eastern,38,PA
+H-01198,tiktok,Low Value,"Less than $250,000",prospecting,Central,1,TN
+H-01199,tiktok,High Value,"Less than $250,000",rd,Mountain,70,CO
+H-01200,google,Ideal,"$5,000,000 to $9,999,999",brand,Eastern,83,NJ
