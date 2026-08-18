@@ -120,6 +120,11 @@ MATCH_NOTICE=0.80   # below this, still rank, but say the order is rough. Measur
 # sentence the size limit uses, rather than by running out of memory in front of a visitor.
 MAX_ROWS=100_000
 
+# A refused file still has to account for every row it read. Listing them is the proof
+# nothing was quietly dropped, but a 100k-row file's worth of them is not a page — so the
+# rows are listed up to here and counted past it. The COUNTS are always complete.
+DECLINED_SHOWN=200
+
 # The file the "score the sample" button runs. Named here rather than in the template so
 # the button and the README point at the same thing.
 SAMPLE_FILE='demo_leads.csv'
@@ -358,7 +363,8 @@ def _ctx(**kw):
     """Everything the one template can see. Defaults first, caller's overrides second,
     then the few values that must be computed AFTER the override (cut_pct tracks whichever
     cutoffs are in play; score_pct drives the hero number)."""
-    base=dict(single=None,qv=None,cal=None,schema=None,view='rep',one={},cut=APPLIED['cut'],fields=FIELDS,
+    base=dict(single=None,qv=None,cal=None,schema=None,summary=None,declined=None,
+              view='rep',one={},cut=APPLIED['cut'],fields=FIELDS,
               form_fields=FORM_FIELDS,options=OPTIONS,combo=COMBO,derived_params=(),
               unknown_label=UNKNOWN_LABEL,unknown_value=UNKNOWN_VALUE,combo_label=combo_label,
               tiers=TIERS,cut_keys=CUT_KEYS,
@@ -554,8 +560,14 @@ def _match_detail(summary):
     unreadable=[f for f,n in summary['unusable_by_field'].items()
                 if scored and n>=scored*0.9]
     d={'pct':int(round(summary['coverage']*100)),
+       # Coverage is measured over the rows that SCORED, so any sentence quoting it has to
+       # name that population rather than the file. A file of 100 rows where 99 carry no
+       # id has one scored row, and "25% across your 1 leads" describes a file nobody
+       # uploaded. rows_in and failed are carried alongside so the copy can say both.
        'rows':scored,
        'rows_text':f'{scored:,}',        # prose, so it gets the separator the counts don't
+       'rows_in':summary['rows_in'],
+       'failed':summary['failed'],
        'fields':len(scorer.KEY_FIELDS),
        'unreadable':[(labels.get(f,f), f) for f in unreadable],
        # Which of the scored fields we FOUND as columns, separately from which we could
@@ -565,6 +577,12 @@ def _match_detail(summary):
        'read':[(labels.get(f,f), f) for f in scorer.KEY_FIELDS
                if f not in summary['missing_cols']],
        'ignored':summary['ignored_cols'],
+       # Whether any column we DID read carried values we could not use. Without this the
+       # copy blames the values whenever coverage is short, which is wrong in the common
+       # case where the columns that were there were fine and the ones that mattered were
+       # simply absent.
+       'values_unreadable':any(n for f,n in summary['unusable_by_field'].items()
+                               if f not in summary['missing_cols']),
        'expected':[(labels.get(f,f), f) for f in scorer.KEY_FIELDS],
        'high':summary['confidence'].get('High',0),
        # Whether NOTHING resolved, which is a different sentence from "not enough did".
@@ -612,11 +630,24 @@ def _rank_bytes(raw, cuts):
     # the person uploading it these are all the same event: the tool said no, and why.
     if band=='refuse':
         d=_match_detail(summary)
+        # Two phrasings, because one of them would be a lie in the other's case. With no
+        # failures the file and the scored rows are the same thing and the sentence can
+        # say "your 5 leads". With failures they are not, and the coverage figure only
+        # ever described the rows that scored.
+        leads='lead' if d['rows']==1 else 'leads'
+        across=(f"across your {d['rows_text']} {leads}" if not d['failed']
+                else f"across the {d['rows_text']} {leads} it could score at all")
         return {'single':{'error':
             f"That file was read, but not ranked. Of the {d['fields']} fields this model "
-            f"scores on, it could use {d['pct']}% across your {d['rows_text']} leads — too "
-            'little to put them in an order worth trusting, so it has not.'},
-                'schema':d}
+            f"scores on, it could use {d['pct']}% {across} — too little to put them in an "
+            'order worth trusting, so it has not.'},
+                'schema':d,
+                # The ranking is withheld; the ROWS are not. score_rows' contract is that
+                # a row which could not be scored still ships carrying its reason, and a
+                # refusal that swallowed those rows would break it one level up — the page
+                # would be the only place a lead ever disappeared.
+                'summary':summary,
+                'declined':[r for r in res if r.get('error')][:DECLINED_SHOWN]}
 
     payload={'queue':res,'summary':summary}
     if band=='notice':

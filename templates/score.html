@@ -17,8 +17,8 @@
               {% for label,name in schema.read %}<span class="mono">{{name}}</span>{%
                 if not loop.last %}, {% endif %}{% endfor %}.
               {% if schema.none_usable %}The values in them were not ones this model has
-                seen.{% else %}Too few of their values were ones this model has
-                seen.{% endif %}</div>
+                seen.{% elif schema.values_unreadable %}Too few of their values were ones
+                this model has seen.{% endif %}</div>
           {% endif %}
           {# Only worth saying when something is actually absent. When every column was
                found and the VALUES were the problem, repeating the same four names under
@@ -38,6 +38,36 @@
               {{schema.suggest[1]}}, rename it to
               <span class="mono">{{schema.suggest[2]}}</span> and upload again.</div>
           {% endif %}
+        {% endif %}
+        {# Withholding the ranking is the point. Withholding the ROWS is not: score_rows
+             promises that a row it could not score still comes back carrying its reason,
+             and a refusal that swallowed them would make this page the one place a lead
+             can disappear. Same counts the ranked board reports, from the same summary. #}
+        {% if summary %}{% set s=summary %}
+          <div class="note">
+            <span class="num">{{s.rows_in}}</span> rows read{% if s.blank_skipped %},
+              <span class="num">{{s.blank_skipped}}</span> blank row(s) skipped{% endif %} ·
+            <span class="num">{{s.scored}}</span> scored{% if s.failed %} ·
+              <span class="num">{{s.failed}}</span> could not be scored{% endif %}.
+            {%- if s.by_kind %}<br>Reasons:
+              {% for k,n in s.by_kind.items() %}{{k}}
+                <span class="num">{{n}}</span>{% if not loop.last %}, {% endif %}{% endfor %}.{% endif %}
+            {% if declined %}
+              <details class="sumdet">
+                <summary>The <span class="num">{{s.failed}}</span> rows that could not be
+                  scored</summary>
+                <div class="sumdet-bd">
+                  {% for d in declined %}<div><b>{{d.lead_id or 'no id'}}</b> —
+                    {{d.error}}{% if d.row_notes %} · {{d.row_notes|join(' · ')}}{% endif %}</div>
+                  {% endfor %}
+                  {%- if s.failed > declined|length %}<div>…and
+                    <span class="num">{{s.failed - declined|length}}</span> more.</div>{% endif %}
+                </div>
+              </details>
+            {% endif %}
+          </div>
+        {% endif %}
+        {% if schema %}
           <form method="post" action="{{url_for('rank_sample')}}" class="btns">
             <button class="btn" type="submit">Score the sample file instead</button>
           </form>

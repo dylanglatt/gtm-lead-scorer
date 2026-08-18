@@ -120,6 +120,34 @@ def test_the_refusal_offers_the_sample_file_as_a_way_out(client):
     assert '/rank/sample' in html
 
 
+def test_a_refused_file_still_accounts_for_every_row_it_read(client):
+    """A refusal withholds the RANKING. It may not withhold the rows.
+
+    score_rows promises that a row it could not score still comes back carrying its
+    reason, and the first version of this feature broke that promise one level up: the
+    queue was discarded on refusal, so a file of 100 rows with 99 missing ids reported
+    "25% across your 1 leads" and never mentioned the other 99 at all. The page became the
+    one place a lead could disappear.
+
+    The counts come from the same _summarize the ranked board uses, so there is no second
+    set of numbers to drift."""
+    rows = ['ID-%d,google' % i for i in range(1, 6)] + [' ,google'] * 95
+    html = upload(client, ('lead_id,channel\n' + '\n'.join(rows)).encode())
+
+    assert not has_board(html), 'the ranking is still withheld'
+    assert 'not ranked' in html
+    # The true shape of the upload, not the shape of the part that happened to score.
+    assert '<span class="num">100</span> rows read' in html
+    assert '<span class="num">5</span> scored' in html
+    assert '<span class="num">95</span> could not be scored' in html
+    # And why, in the words the run summary already uses, plus the rows themselves.
+    assert 'missing lead ID' in html
+    assert 'no lead_id, so this row could not be scored' in html
+    # The coverage sentence must not pass the scored count off as the file.
+    assert 'across your 5 leads' not in html
+    assert 'it could score at all' in html
+
+
 def test_a_file_with_no_scorable_rows_is_refused_not_divided_by_zero(client):
     html = upload(client, b'lead_id,channel,icp_category\n,google,Ideal\n,google,Ideal\n')
     assert not has_board(html)
