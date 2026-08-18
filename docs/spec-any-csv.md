@@ -1,5 +1,20 @@
 # Spec: score any CSV, without ever inventing a number
 
+> **Status: design document. Deliberately not built.**
+>
+> This describes how the tool would handle arbitrary input. It is published unbuilt on
+> purpose. Section 0 is the reason: the interesting part of this problem is knowing which
+> cases are solvable, and the honest conclusion is that a foreign schema with no outcome
+> column cannot be scored by anyone, so the correct product response is a refusal rather
+> than a number. Building the machinery to reach that conclusion at request time is a
+> larger and more fragile system than the scoped tool that ships here, and a scoped tool
+> that states its boundary is worth more than a general one that hides it.
+>
+> The one piece of this that IS built is the file-level mismatch banner: when an upload's
+> values largely fall outside the vocabulary the model was fit on, the results page says
+> so instead of presenting a confident board. That is section 0's principle at the size it
+> actually earns.
+
 Target repo: `dylanglatt/gtm-lead-scorer` (public, `main`, deployed to Render free).
 Baseline commit for this work: whatever `main` points at when you start. Record the SHA in
 `docs/baseline.md` as step one.
@@ -177,8 +192,11 @@ Route M differences from N, all of which must be visible on the page:
 - An **Assumptions** panel above the board listing every column mapping and every value
   alias that was applied, in the form `your column "Lead Source" was read as Source`.
   This panel is the thing that makes Route M defensible rather than sneaky.
-- The `/export` CSV gains a `route` column, and the run summary carries the assumption
-  count. Keep the export a flat table; do not try to smuggle a preamble into a CSV.
+- The `/export` CSV gains a `route` column **only when the route is not N**. On the native
+  route the export is untouched, byte for byte, because invariant 10.1 outranks provenance
+  in the export and a golden file that has to be re-baselined is not a golden file. The run
+  summary carries the assumption count. Keep the export a flat table; do not try to smuggle
+  a preamble into a CSV.
 
 ---
 
