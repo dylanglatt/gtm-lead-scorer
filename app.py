@@ -40,7 +40,7 @@ Two names you will see everywhere in the template:
 Grep '# DEMO:' for the spots most likely to be hit live."""
 from flask import Flask, request, render_template, redirect, url_for, Response
 from werkzeug.exceptions import HTTPException, RequestEntityTooLarge
-import io, os, csv, math, re, json, secrets, collections, logging, traceback
+import io, os, csv, math, re, json, secrets, collections, logging, traceback, threading
 import scorer
 
 # The parts that need no request and no app. Imported rather than defined here so this file
@@ -248,6 +248,11 @@ def _input_rows(r, one, derived=()):
 # covers a realistic burst; the token is still one-shot and nothing is written to disk.
 _RESULTS={}
 _RESULTS_MAX=64
+# One worker now serves eight threads, so insert-and-evict is a genuine critical section:
+# two uploads at the cap can otherwise pick the same oldest key (KeyError) or mutate the
+# dict mid-iteration (RuntimeError), either of which is a 500 on the upload path. Reads are
+# a single atomic .get() and do not take it.
+_RESULTS_LOCK=threading.Lock()
 
 # The page is six files under templates/ now. base.html holds the shell - head, CSS, top
 # bar and the page script - and each view fills its {% block content %}. _intake.html is
@@ -477,7 +482,8 @@ def rank():
         leads,report=read_leads(f.read())
     except ValueError as e:                       # file-level: the only loud failure
         payload={'single':{'error':f'Could not read that CSV: {e}'}}
-        token=secrets.token_urlsafe(9); _RESULTS[token]=payload
+        token=secrets.token_urlsafe(9)
+        with _RESULTS_LOCK: _RESULTS[token]=payload
         return redirect(url_for('results', token=token), code=303)
 
     # THE contract: every input row produces an output row, carrying its reason if it
@@ -488,9 +494,10 @@ def rank():
     payload={'queue':res,'summary':_summarize(res, report, len(leads))}
 
     token=secrets.token_urlsafe(9)
-    _RESULTS[token]=payload
-    while len(_RESULTS)>_RESULTS_MAX:
-        _RESULTS.pop(next(iter(_RESULTS)))                      # drop oldest
+    with _RESULTS_LOCK:
+        _RESULTS[token]=payload
+        while len(_RESULTS)>_RESULTS_MAX:
+            _RESULTS.pop(next(iter(_RESULTS)))                  # drop oldest
     return redirect(url_for('results', token=token), code=303)
 
 def _retier(r, cuts):
@@ -595,7 +602,10 @@ def calibrate(token=None):
     board's score histogram turns a boundary into a number of leads to work. Reps reach
     the ranked list directly and never land here."""
     if token is None:
-        token=next(reversed(_RESULTS), None)         # newest board ranked this session
+        # Under the lock because reversed() iterates: a concurrent upload evicting from
+        # the store mid-iteration would otherwise raise here.
+        with _RESULTS_LOCK:
+            token=next(reversed(_RESULTS), None)     # newest board ranked this session
     payload=_RESULTS.get(token) if token else None
     rows=payload['queue'] if payload and 'queue' in payload else []
     hist=_hist(rows)
