@@ -1,8 +1,14 @@
 # One-click deploy on Render: New → Blueprint → point it at this repo.
 #
-# startCommand is the Procfile line, byte for byte. Two places say it because Render reads
-# this file and a Procfile host reads the other; they must not drift, so if one changes the
-# other changes with it.
+# startCommand is the Procfile line, byte for byte. Three places say it because Render reads
+# this file, a Procfile host reads the other, and a container host reads the Dockerfile CMD;
+# they must not drift, so if one changes the others change with it.
+#
+# --workers 1 is deliberate, not a resource decision: _RESULTS in app.py is per-process
+# state holding ranked boards between the POST and the redirected GET. A second worker
+# means a redirect can land on a process that never saw the token, and the upload fails
+# with "no longer available" about half the time. Raise --threads, never --workers,
+# unless _RESULTS moves out of process memory first.
 #
 # PYTHON_VERSION is pinned because model.joblib is a pickle: scikit-learn is pinned exactly
 # in requirements.txt for the same reason, and pinning the interpreter alongside it keeps
@@ -14,7 +20,7 @@ services:
     runtime: python
     plan: free
     buildCommand: pip install -r requirements.txt
-    startCommand: gunicorn app:app --bind 0.0.0.0:$PORT --workers 2 --timeout 120
+    startCommand: gunicorn app:app --bind 0.0.0.0:$PORT --workers 1 --threads 8 --timeout 120
     # The route exists for exactly this: a health check that never touches the model.
     healthCheckPath: /healthz
     envVars:

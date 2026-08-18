@@ -18,4 +18,4 @@ ENV PORT=8000
 EXPOSE 8000
 
 # Shell form on purpose — $PORT has to be expanded at run time, because the host injects it.
-CMD gunicorn app:app --bind 0.0.0.0:$PORT --workers 2 --timeout 120
+CMD gunicorn app:app --bind 0.0.0.0:$PORT --workers 1 --threads 8 --timeout 120

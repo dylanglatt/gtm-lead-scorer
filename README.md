@@ -60,7 +60,7 @@ queue. `leads_messy_fixture.csv` is the other one to try — see [What it does](
 The app serves under gunicorn, which is what every host below actually runs:
 
 ```
-gunicorn app:app --bind 0.0.0.0:$PORT --workers 2 --timeout 120
+gunicorn app:app --bind 0.0.0.0:$PORT --workers 1 --threads 8 --timeout 120
 ```
 
 - **Render** — New → Blueprint → point it at this repo. `render.yaml` sets the build and
