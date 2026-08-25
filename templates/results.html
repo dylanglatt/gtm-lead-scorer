@@ -5,6 +5,20 @@
       <span class="hd-note">work the top first
         <span class="faintnote">(tiers set in Manager · Calibration)</span></span></div>
 
+    {# Provenance for a non-CSV board. Shown ABOVE the match notice and run summary because
+         "where did this come from" is read before "how much of it could be used" — this is
+         a board a visitor can't otherwise tell apart from a CSV upload. org is the literal
+         *.my.salesforce.com domain this hit via OAuth; the raw-API link is there so a
+         skeptical, technical reader (an engineer, say, forwarded this by a recruiter) can
+         see Salesforce's own record shape rather than take the app's word for it. #}
+    {% if qv.source %}
+      <div class="runsum">
+        Pulled live from <b>Salesforce</b> via OAuth (Client Credentials Flow) — org
+        <span class="mono">{{qv.source.org}}</span>.
+        <a href="{{qv.source.raw_url}}">View raw API response</a>
+      </div>
+    {% endif %}
+
     {# The file-level match notice. It sits ABOVE the run summary and above the board
          because it is about whether the order below can be trusted at all, which has to
          be read before the order is, not after. Shown only when the file is short of
