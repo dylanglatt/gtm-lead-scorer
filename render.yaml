@@ -29,3 +29,13 @@ services:
     envVars:
       - key: PYTHON_VERSION
         value: 3.12.7
+      # sync: false -- Render will prompt for these in the dashboard instead of reading a
+      # value out of this file, so a Salesforce Consumer Secret never sits in git. All
+      # three unset (the default until someone fills them in) is a supported state: the
+      # app just runs without the Salesforce feature -- see sf_configured in app.py.
+      - key: SF_LOGIN_URL
+        sync: false
+      - key: SF_CONSUMER_KEY
+        sync: false
+      - key: SF_CONSUMER_SECRET
+        sync: false

@@ -4,7 +4,7 @@ PRESENTATION ONLY. Every number and message on the page comes from scorer.score_
 this file decides how it looks, never what it says. Tier names, actions and colour keys
 come from scorer.TIERS and are never restated here.
 
-THE TWO PATHS THROUGH THIS FILE
+THE THREE PATHS THROUGH THIS FILE
 
   One typed lead                          GET /score          -> score()      ~line 916
     read the form params
@@ -19,6 +19,12 @@ THE TWO PATHS THROUGH THIS FILE
     _summarize             N in / scored / flagged by kind / confidence split  ~line 1007
     stash in _RESULTS, redirect to GET /results/<token>  (Post/Redirect/Get)
     results()              re-tier vs APPLIED, filter, paginate, render        ~line 1114
+
+  A lead (or batch) from another system   POST /api/score     -> api_score()
+    _api_map_lead           JSON keys -> scorer fields, via the SAME HEADER_MAP the CSV
+                            path uses — a Clay/HubSpot/Salesforce-shaped payload just works
+    score_row / score_rows  same batch entry point rank() feeds, same APPLIED cutoffs
+    JSON out, no page, no token — built for a workflow step to call inline
 
   Manager · Calibration                   GET /calibrate      -> calibrate()  ~line 1158
     the only place cutoffs change. Apply writes APPLIED; nothing is re-scored.
@@ -40,7 +46,8 @@ Two names you will see everywhere in the template:
 Grep '# DEMO:' for the spots most likely to be hit live."""
 from flask import Flask, request, render_template, redirect, url_for, Response
 from werkzeug.exceptions import HTTPException, RequestEntityTooLarge
-import io, os, csv, math, re, json, secrets, collections, logging, traceback, threading
+import io, os, csv, math, re, json, secrets, collections, logging, traceback, threading, time
+import urllib.request, urllib.parse, urllib.error
 import scorer
 
 # The parts that need no request and no app. Imported rather than defined here so this file
@@ -124,6 +131,12 @@ MAX_ROWS=100_000
 # nothing was quietly dropped, but a 100k-row file's worth of them is not a page — so the
 # rows are listed up to here and counted past it. The COUNTS are always complete.
 DECLINED_SHOWN=200
+
+# /api/score per-request cap. Generous for a Clay enrichment step or a Zapier batch step
+# (both call per-record or in small batches), small enough that one request can't hold the
+# process the way a 100k-row CSV upload is allowed to (that path streams to a page over
+# several seconds; this one is meant to return inside a workflow step's own timeout).
+API_MAX_LEADS=2000
 
 # The file the "score the sample" button runs. Named here rather than in the template so
 # the button and the README point at the same thing.
@@ -365,6 +378,12 @@ def _ctx(**kw):
     cutoffs are in play; score_pct drives the hero number)."""
     base=dict(single=None,qv=None,cal=None,schema=None,summary=None,declined=None,
               offer_sample=False,
+              # Checked fresh per request (not cached at import) so setting the env vars
+              # and restarting is all it takes for the Salesforce button to appear -- no
+              # code change, no redeploy step beyond the restart itself.
+              sf_configured=bool(os.environ.get('SF_CONSUMER_KEY')
+                                 and os.environ.get('SF_CONSUMER_SECRET')
+                                 and os.environ.get('SF_LOGIN_URL')),
               view='rep',one={},cut=APPLIED['cut'],fields=FIELDS,
               form_fields=FORM_FIELDS,options=OPTIONS,combo=COMBO,derived_params=(),
               unknown_label=UNKNOWN_LABEL,unknown_value=UNKNOWN_VALUE,combo_label=combo_label,
@@ -436,6 +455,37 @@ def score():
 # paths. This layer only turns bytes into per-lead dicts.
 # ---------------------------------------------------------------------------
 HEADER_MAP=csv_io.build_header_map(FIELDS)
+
+# Real Salesforce / HubSpot field API names, aliased to the scorer's own field names.
+# ONLY used by /api/score (see API_HEADER_MAP below) — deliberately NOT merged into
+# HEADER_MAP, so the CSV upload path (read_leads) and everything that pins its behavior
+# (test_schema_guard.py, test_schema_match.py) is untouched. A column named exactly one of
+# these still won't be picked up by a CSV upload today; only the JSON API recognizes them.
+#
+#   leadsource / statecode      Salesforce Lead standard fields (LeadSource, StateCode)
+#   rating                      Salesforce Lead.Rating (Hot/Warm/Cold) -> icp_category.
+#                               The vocabulary does not match (icp_category expects High
+#                               Value/Ideal/Low Value/Unknown), so this is NOT a semantic
+#                               translation — a Rating value degrades exactly the way any
+#                               unrecognized category value does: flagged, unusable, never
+#                               guessed. Aliased anyway because the field is real and worth
+#                               reading; scorer.normalize_category owns what happens to it.
+#   hs_analytics_source         HubSpot contact property: Original Source
+#   annualrevenue                Salesforce AND HubSpot both use this exact API name
+#   hubspotscore                 HubSpot's own predictive lead score -> legacy_score
+#   lead_source / leadscore      common custom-property spellings on either platform
+#   hs_object_id                 HubSpot's own contact/record id
+#
+# Real orgs customize field names further (a custom object, a renamed property) — that
+# widening is the same one-line-per-alias shape as everything below, which is the point:
+# this is the seam a GTM engineer extends per org, not a finished mapping for every org.
+CRM_ALIASES={'leadsource':'channel', 'hs_analytics_source':'channel', 'lead_source':'channel',
+             'statecode':'state',
+             'rating':'icp_category',
+             'annualrevenue':'company_annual_revenue',
+             'hubspotscore':'legacy_score', 'leadscore':'legacy_score',
+             'hs_object_id':'lead_id'}
+API_HEADER_MAP=dict(HEADER_MAP, **CRM_ALIASES)
 
 def read_leads(raw):
     """bytes -> (leads, report). The policy and the parsing live in csv_io; this binds
@@ -625,7 +675,20 @@ def _rank_bytes(raw, cuts):
         return _decline(
             f'That file has {len(leads):,} rows and this ranks up to {MAX_ROWS:,} at a '
             'time. Split it and rank the parts, or run the tool locally.')
+    return _rank_leads(leads, report, cuts)
 
+def _rank_leads(leads, report, cuts, source=None):
+    """(lead_dict, why_notes) pairs + a report dict -> the payload results() renders. THE
+    shared tail of every intake path that produces a ranked board -- extracted out of
+    _rank_bytes so a non-CSV source (the Salesforce pull below) scores, ranks and declines
+    through the EXACT same rules a CSV upload does, rather than a second copy of them that
+    could quietly drift. report shape: {'blank','missing_cols','ignored_cols','header'} --
+    see read_leads for what CSV puts there; a non-CSV source fills in the same keys.
+
+    source, when given, is opaque here -- just a dict (today: {'org','raw_url'} from the
+    Salesforce pull) carried onto whichever payload shape gets returned below, ranked or
+    declined, so results.html/score.html can show where a non-CSV board came from. None
+    for the CSV/sample paths, which have nothing to attribute and render no such note."""
     # THE contract: every input row produces an output row, carrying its reason if it
     # could not be scored. score_rows owns both rules; see it and scorer.score_leads.
     res=score_rows([lead for lead,_ in leads], cuts)
@@ -658,9 +721,11 @@ def _rank_bytes(raw, cuts):
             # that swallowed those rows would break it one level up — the page would be
             # the only place a lead ever disappeared.
             summary=summary,
-            declined=[r for r in res if r.get('error')][:DECLINED_SHOWN])
+            declined=[r for r in res if r.get('error')][:DECLINED_SHOWN],
+            **({'source':source} if source else {}))
 
     payload={'queue':res,'summary':summary}
+    if source: payload['source']=source
     if band=='notice':
         payload['match']=_match_detail(summary)
     return payload
@@ -784,7 +849,7 @@ def results(token):
 
     tiers,confs=_chips(rows, tier, conf)
     qv=dict(rows=pagerows, tier=tier, conf=conf, q=q, tier_chips=tiers, conf_chips=confs,
-            match=payload.get('match'),
+            match=payload.get('match'), source=payload.get('source'),
             total=len(rows), matching=len(sel), page=page, npages=npages, per=per,
             sizes=PAGE_SIZES, first=start+1, last=start+len(pagerows), link=link, token=token,
             filtered=(tier!='all' or conf!='all' or bool(q)), summary=payload.get('summary'),
@@ -848,6 +913,251 @@ def export(token):
                         '; '.join(r.get('flags',[])+r.get('warnings',[])+r.get('row_notes',[]))])
     return Response(buf.getvalue(), mimetype='text/csv',
                     headers={'Content-Disposition':'attachment; filename="lead-scorer-results.csv"'})
+
+@app.route('/api/score', methods=['POST'])
+def api_score():
+    """JSON scoring endpoint for machine callers — Clay, Zapier, a CRM workflow step, a
+    reverse-ETL sync — that want a score back inline instead of a page. THE THIRD PATH
+    through this file, alongside the typed lead (GET /score) and the CSV (POST /rank):
+    same scorer.score_lead underneath, same team cutoffs (Manager · Calibration / APPLIED)
+    the board and the single-lead verdict already read, so a caller never sees a number the
+    web UI wouldn't also show for the same lead.
+
+    Body is one lead object, or {"leads": [...]} / a bare JSON array for a batch (capped at
+    API_MAX_LEADS — see there for why). Lead keys are resolved through API_HEADER_MAP
+    (case/space/punctuation-insensitive via csv_io._norm_header): the scorer's own field
+    names and the form's short params, same as a CSV upload — PLUS a set of real Salesforce
+    and HubSpot field API names (LeadSource, StateCode, AnnualRevenue, hs_analytics_source,
+    hubspotscore, and a couple of common custom-property spellings — see CRM_ALIASES above
+    for the full list and what each maps to, including the one, Rating, whose vocabulary
+    doesn't actually match and degrades on purpose rather than mistranslating). An
+    unrecognized key is ignored rather than rejected, exactly like an unmapped CSV column —
+    see read_leads above. state -> time_zone is derived when time_zone is omitted, the same
+    derivation the single-lead form does in score() above. A lead with no lead_id comes back
+    unscored with a reason instead of being rejected, same as a CSV row with a blank id —
+    see score_row.
+
+    Deliberately outside the E1xx-E9xx taxonomy below: those are for this process breaking,
+    and a malformed request here is the caller's input being wrong, the same category CSV
+    validation already answers with a sentence rather than a crash."""
+    if not request.is_json:
+        return _api_error('Content-Type must be application/json', 415)
+    try:
+        payload=request.get_json(force=False)
+    except Exception:
+        return _api_error('could not parse JSON body', 400)
+
+    if isinstance(payload, list):
+        leads_in, many = payload, True
+    elif isinstance(payload, dict) and isinstance(payload.get('leads'), list):
+        leads_in, many = payload['leads'], True
+    elif isinstance(payload, dict):
+        leads_in, many = [payload], False
+    else:
+        leads_in, many = None, False
+    if leads_in is None:
+        return _api_error('body must be a lead object, {"leads": [lead, ...]}, or a bare '
+                          '[lead, ...] array', 400)
+    if len(leads_in) > API_MAX_LEADS:
+        return _api_error(f'{len(leads_in)} leads exceeds the {API_MAX_LEADS}-per-request cap',
+                          413)
+
+    results=[]
+    for raw in leads_in:
+        if not isinstance(raw, dict):
+            results.append({'error':'each lead must be a JSON object','lead_id':None})
+        else:
+            results.append(score_row(_api_map_lead(raw), APPLIED['cut']))
+    body={'count':len(results),'results':results} if many else results[0]
+    return Response(json.dumps(body), mimetype='application/json')
+
+def _api_map_lead(raw):
+    """A raw JSON object -> scorer field names, via API_HEADER_MAP (HEADER_MAP plus real
+    Salesforce/HubSpot field aliases — see CRM_ALIASES) so a Clay/HubSpot/Salesforce-shaped
+    payload resolves without the caller having to rename anything first."""
+    lead={}
+    for k,v in raw.items():
+        field=API_HEADER_MAP.get(_norm_header(k))
+        if field: lead[field]=v
+    typed_state=str(lead.get('state') or '').strip()
+    code=normalize_state(typed_state)
+    if code: lead['state']=code
+    if not str(lead.get('time_zone') or '').strip():
+        tz=time_zone_for(code or typed_state)
+        if tz: lead['time_zone']=tz
+    lead['lead_id']=str(lead.get('lead_id') or '').strip()
+    return lead
+
+def _api_error(message, status):
+    return Response(json.dumps({'error':message}), mimetype='application/json', status=status)
+
+# ---------------------------------------------------------------------------
+# LIVE SALESFORCE PULL. A second proof of the same seam /api/score proves: this reuses
+# _api_map_lead / API_HEADER_MAP (CRM_ALIASES) against a REAL org instead of a hand-built
+# JSON payload, and reuses score_row / rank_key exactly like the CSV board does.
+#
+# Auth is OAuth 2.0 Client Credentials Flow against an External Client App (Salesforce's
+# current replacement for the legacy Connected App) — server-to-server, no interactive
+# login, no password stored anywhere. Configured entirely via three env vars; nothing
+# Salesforce-specific is hardcoded and no secret is ever in source control:
+#   SF_LOGIN_URL       the org's My Domain, e.g. https://orgfarm-xxxx-dev-ed.develop.my.salesforce.com
+#   SF_CONSUMER_KEY    from the External Client App's Settings tab
+#   SF_CONSUMER_SECRET from the same tab, behind "Manage Consumer Details"
+#
+# v59.0 is pinned rather than chasing the newest release: Salesforce keeps old API
+# versions callable for years, and every field this queries (Id, LeadSource, AnnualRevenue,
+# State, Rating) has existed on Lead since long before v59. Nothing here depends on this
+# being the latest version — any supported version works.
+# ---------------------------------------------------------------------------
+SF_API_VERSION='v59.0'
+SF_LEAD_FIELDS='Id,LeadSource,AnnualRevenue,State,Rating'
+SF_LEAD_LIMIT=50
+
+# Not auth -- both routes below stay open on purpose, same as everywhere else in this file.
+# This is cheap insurance of a different kind: /salesforce/leads and /rank/salesforce are
+# public and unauthenticated, but unlike every other route here they place a real network
+# call against a real external org on every hit. A Developer Edition org's daily REST API
+# call budget is finite, and a page that gets shared around and repeatedly clicked (or
+# hit by a bot crawling links) could burn through it for reasons that have nothing to do
+# with anyone actually using the tool. A sliding window, held in the same kind of
+# process-global + lock as _RESULTS above (single gunicorn worker -- see render.yaml --
+# so this needs no cross-process coordination), just caps how often the org gets hit at
+# all. It says nothing about WHO is asking, only how often anyone is.
+SF_MAX_CALLS_PER_HOUR=30
+_SF_CALL_TIMES=collections.deque()
+_SF_CALL_LOCK=threading.Lock()
+
+def _sf_rate_limited():
+    """True if the live Salesforce pull has already run SF_MAX_CALLS_PER_HOUR times in the
+    last hour. Checked, not just recorded -- a call that would exceed the cap is refused
+    before it reaches Salesforce, so the cap actually bounds the org's API usage rather
+    than just describing it after the fact."""
+    now=time.monotonic()
+    with _SF_CALL_LOCK:
+        while _SF_CALL_TIMES and now-_SF_CALL_TIMES[0]>3600:
+            _SF_CALL_TIMES.popleft()
+        if len(_SF_CALL_TIMES)>=SF_MAX_CALLS_PER_HOUR:
+            return True
+        _SF_CALL_TIMES.append(now)
+        return False
+
+def _sf_token():
+    """Client Credentials Flow: exchange the External Client App's Consumer Key + Secret
+    for a short-lived access token, scoped to whichever user the app's policy runs as
+    (see Setup -> the app -> Policies -> Run As). Raises RuntimeError with Salesforce's own
+    error body on failure -- see api's caller, which turns that into a plain-sentence
+    response instead of a stack trace, matching this file's error policy everywhere else."""
+    login_url=os.environ.get('SF_LOGIN_URL')
+    consumer_key=os.environ.get('SF_CONSUMER_KEY')
+    consumer_secret=os.environ.get('SF_CONSUMER_SECRET')
+    if not (login_url and consumer_key and consumer_secret):
+        raise RuntimeError('SF_LOGIN_URL, SF_CONSUMER_KEY and SF_CONSUMER_SECRET must all be set')
+    body=urllib.parse.urlencode({'grant_type':'client_credentials',
+                                  'client_id':consumer_key,
+                                  'client_secret':consumer_secret}).encode()
+    req=urllib.request.Request(f'{login_url.rstrip("/")}/services/oauth2/token', data=body,
+                                headers={'Content-Type':'application/x-www-form-urlencoded'})
+    try:
+        with urllib.request.urlopen(req, timeout=15) as resp:
+            data=json.loads(resp.read())
+    except urllib.error.HTTPError as e:
+        raise RuntimeError(f'Salesforce auth failed ({e.code}): {e.read().decode(errors="replace")}') from e
+    return data['access_token'], data['instance_url']
+
+def _sf_query_leads():
+    """Token + SOQL query -> (raw Salesforce Lead records, instance_url). Records are a list
+    of dicts in Salesforce's own field names, unmapped. instance_url is returned alongside
+    them -- not just for the request itself -- because callers use it as PROOF this came
+    from a real org: it's shown on the ranked board and in the raw JSON view so a technical
+    reader (an engineer skimming this after a recruiter forwards it) can see it hit an
+    actual *.my.salesforce.com domain via OAuth, not a canned fixture. Raises RuntimeError
+    with Salesforce's own error text on either step failing -- both callers below turn that
+    into a plain-sentence response, never a stack trace, matching this file's error policy
+    everywhere else."""
+    token, instance_url=_sf_token()
+    soql=f'SELECT {SF_LEAD_FIELDS} FROM Lead LIMIT {SF_LEAD_LIMIT}'
+    q=urllib.parse.urlencode({'q':soql})
+    req=urllib.request.Request(
+        f'{instance_url}/services/data/{SF_API_VERSION}/query?{q}',
+        headers={'Authorization':f'Bearer {token}'})
+    try:
+        with urllib.request.urlopen(req, timeout=15) as resp:
+            return json.loads(resp.read()).get('records',[]), instance_url
+    except urllib.error.HTTPError as e:
+        raise RuntimeError(f'Salesforce query failed ({e.code}): '
+                           f'{e.read().decode(errors="replace")}') from e
+
+@app.route('/salesforce/leads')
+def salesforce_leads():
+    """Raw JSON view of a live Salesforce pull -- score_row per record, no ranked-board
+    page. Useful from curl/Postman while wiring this up; /rank/salesforce below is the
+    same pull rendered as the normal ranked board a rep would actually look at. org and
+    each record's raw Salesforce Id/fields are left in the response on purpose -- this is
+    the page a skeptical reader lands on from the "View raw API response" link on the
+    board, and Salesforce's own record shape (00Q-prefixed Ids, LeadSource/Rating/etc as
+    Salesforce names them) is the actual evidence, not anything this app could assert."""
+    if _sf_rate_limited():
+        return _api_error(f'This demo has hit its cap of {SF_MAX_CALLS_PER_HOUR} live '
+                          'Salesforce pulls per hour -- cheap insurance against a public, '
+                          "unauthenticated route burning the connected org's daily API "
+                          'limit. Try again shortly.', 429)
+    try:
+        records,instance_url=_sf_query_leads()
+    except RuntimeError as e:
+        return _api_error(str(e), 502)
+    if not records:
+        return Response(json.dumps({'count':0,'source':'salesforce','org':instance_url,
+                        'results':[],
+                        'note':'query ran but returned no Lead records -- add a few Leads '
+                                'in Salesforce and try again'}), mimetype='application/json')
+    results=[score_row(_api_map_lead(r), APPLIED['cut']) for r in records]
+    results.sort(key=rank_key)
+    return Response(json.dumps({'count':len(results),'source':'salesforce','org':instance_url,
+                                'results':results}),
+                    mimetype='application/json')
+
+# Which scorer fields a Lead pull can possibly fill, given SF_LEAD_FIELDS above (Id maps to
+# lead_id, which is not itself a FIELDS entry) plus the state -> time_zone derivation
+# _api_map_lead always does. Tracks SF_LEAD_FIELDS by hand, the same way OFFERED tracks the
+# model's fitted vocabulary by hand -- widen one, widen the other.
+SF_MAPPED_FIELDS={'channel','icp_category','company_annual_revenue','state','time_zone'}
+
+def _rank_salesforce(cuts):
+    """Pull real Lead records from Salesforce and rank them through the exact same
+    _rank_leads tail the CSV board uses -- this produces the CSV board with a different
+    intake, not a second, possibly-divergent feature.
+
+    Builds a `source` dict and threads it through to _rank_leads so the board itself
+    carries proof of where it came from -- see _rank_leads and results.html. A page that
+    just says "pull from Salesforce" with no visible trace of Salesforce afterward is not
+    convincing to anyone who can't see the server logs; org + a link to the raw API
+    response is."""
+    if _sf_rate_limited():
+        return _decline(f'This demo has hit its cap of {SF_MAX_CALLS_PER_HOUR} live '
+                        'Salesforce pulls per hour -- cheap insurance against a public, '
+                        "unauthenticated button burning the connected org's daily API "
+                        'limit. Try again shortly.')
+    try:
+        records,instance_url=_sf_query_leads()
+    except RuntimeError as e:
+        return _decline(f'Could not pull from Salesforce: {e}')
+    if not records:
+        return _decline('Connected to Salesforce, but the query returned no Lead records. '
+                        'Add a few Leads in your org and try again.')
+    leads=[(_api_map_lead(r), []) for r in records]
+    report={'blank':0,
+            'missing_cols':sorted(FIELD_NAMES-SF_MAPPED_FIELDS),
+            'ignored_cols':[],
+            'header':len(SF_LEAD_FIELDS.split(','))}
+    source={'org':instance_url.replace('https://','').replace('http://',''),
+            'raw_url':url_for('salesforce_leads')}
+    return _rank_leads(leads, report, cuts, source=source)
+
+@app.route('/rank/salesforce', methods=['POST'])
+def rank_salesforce():
+    """Pull and rank real Leads from the connected Salesforce org -- same Post/Redirect/Get
+    shape as /rank and /rank/sample, so this and a CSV upload land on the identical board."""
+    return _stash_and_redirect(_rank_salesforce(_cuts(request.form)))
 
 @app.route('/healthz')
 def healthz():

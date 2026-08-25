@@ -85,6 +85,8 @@ either way — it did not, once), ingestion of the messy fixture, what an unreco
 allowed to change, that junk sinks instead of ranking, and that a file the model cannot read
 is refused rather than ranked. `test_export_golden.py` holds the exported bytes for
 `demo_leads.csv` fixed, so a change to anything else cannot quietly move a score.
+None of it needs Salesforce credentials — `test_salesforce.py` monkeypatches the one function
+that talks to the network, so `pytest` runs clean on a fresh clone with no env vars set.
 
 ## What it does
 
@@ -124,6 +126,53 @@ Two files ship for trying it under **List → Rank**:
 *Scoring a single lead: the win-propensity, the tier and next action, a confidence level, and a
 plain-English "why" built from each trait's historical close rate.*
 
+## Salesforce integration
+
+A fourth path alongside the typed lead, the CSV upload, and the JSON API: **Pull from
+Salesforce**, next to the other two buttons under **List**, live-pulls Lead records from a
+connected org and ranks them through the identical scoring path everything else on this page
+uses — same `score_row`, same tiers, same "never guess" refusal rules. It is not a mocked
+integration; it is a real OAuth 2.0 Client Credentials exchange against a real Salesforce
+org, on every click.
+
+- **Auth** — a Salesforce External Client App with the Client Credentials Flow enabled,
+  configured to run as a specific user. Three env vars, same three the app already checks
+  before showing the button: `SF_LOGIN_URL`, `SF_CONSUMER_KEY`, `SF_CONSUMER_SECRET`. None
+  set is a fully supported state — the button just doesn't render (`sf_configured` in
+  `_ctx`) and nothing else about the tool changes.
+- **Field mapping reuses the same seam `/api/score` does** — `CRM_ALIASES` extends the CSV
+  header map with Salesforce and HubSpot's own field names (`LeadSource`, `AnnualRevenue`,
+  `Rating`, `hs_analytics_source`, `hubspotscore`, …), so a Lead record maps onto the scorer's
+  fields the same way a CSV column does. A value the model was never trained on — Salesforce's
+  own `LeadSource='Web'`, `Rating='Hot'` — is flagged and excluded, not guessed.
+- **Provenance is on the page, not just in the response** — the ranked board (and a decline,
+  if the pull comes back too thin to rank) shows the exact org this hit and links to
+  `/salesforce/leads`, the raw JSON view, so a skeptical reader doesn't have to take the app's
+  word for it. Real Lead Ids (`00Q…`) and Salesforce's own field shapes are the actual
+  evidence.
+- **An honest ceiling, not a bug** — a standard Salesforce Lead has no native field for two of
+  the four things this model scores on ("Marketing channel" and "Prior score" are concepts
+  this schema invented, not ones Salesforce ships). Every Salesforce-sourced lead is missing
+  at least those two, which caps confidence below High regardless of how clean the rest of the
+  record is. A real deployment would map those onto custom fields; a demo org does not have
+  any, and the tool says so rather than pretending otherwise.
+- **A rate limit protects the connected org, not the tool** — `/rank/salesforce` and
+  `/salesforce/leads` are intentionally unauthenticated, same as every other route here, but
+  unlike the rest they place a real call against a real external API on every hit. A sliding
+  window caps both routes (they share one budget) at `SF_MAX_CALLS_PER_HOUR` pulls, so a
+  page that gets shared around can't quietly burn through a Developer Edition org's daily API
+  limit.
+- **Seeding a demo org** — `scripts/seed_salesforce_leads.py` creates a handful of realistic
+  mock Leads (mixed vocabulary, revenue bands that land inside real scoring boundaries);
+  `scripts/reset_salesforce_leads.py` wipes every Lead in the org first, since a fresh
+  Developer Edition org ships with its own unrelated demo Leads that would otherwise dilute
+  the mock data below the ranking threshold. Both use the same three env vars and Client
+  Credentials Flow as the app itself.
+
+Covered by `test_salesforce.py`: the field mapping, the provenance note on both a ranked and
+a declined board, the button's visibility, the failure paths (bad auth, an empty org), and the
+rate limit — including that a refused pull never reaches Salesforce at all.
+
 ## How the data was made
 
 The original dataset is confidential, so the public version runs on synthetic data built by
@@ -161,6 +210,9 @@ within three points of the figures they replaced.
 - `make_synthetic_data.py` / `train_and_save.py` — the data generator and the training run
 - `test_scorer.py` — the test suite
 - `test_schema_match.py` / `test_schema_guard.py` — the file-level match check and what it does
+- `test_salesforce.py` — the Salesforce pull: field mapping, provenance note, rate limit
 - `scripts/shoot_screenshots.py` — regenerates the images above
 - `scripts/make_test_fixtures.py` — regenerates the CSV fixtures the tests read
+- `scripts/seed_salesforce_leads.py` / `scripts/reset_salesforce_leads.py` — populate or wipe
+  Leads in a connected Salesforce org, for trying **Pull from Salesforce** against real data
 - `Procfile` / `render.yaml` / `Dockerfile` — the three ways to deploy it

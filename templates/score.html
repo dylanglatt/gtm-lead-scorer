@@ -6,6 +6,14 @@
     <div class="card"><div class="card-hd"><h2>Verdict</h2></div>
       <div class="card-bd">
         <div class="flag">{{r['error']}}</div>
+        {# Same provenance note as the ranked board (see results.html) -- a Salesforce pull
+             that gets DECLINED for low coverage is still a real Salesforce pull, and that's
+             not visible anywhere else on this page. #}
+        {% if source %}
+          <div class="note">Pulled live from <b>Salesforce</b> via OAuth (Client Credentials
+            Flow) — org <span class="mono">{{source.org}}</span>.
+            <a href="{{source.raw_url}}">View raw API response</a>.</div>
+        {% endif %}
         {% for n in r.get('normalized',[]) %}<div class="note">Read as: {{n}}</div>{% endfor %}
         {% for f in r.get('flags',[]) %}<div class="flag">{{f}}</div>{% endfor %}
         {# Present only when a file was declined for not matching the model. Naming the

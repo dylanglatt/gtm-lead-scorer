@@ -69,7 +69,11 @@
          drift from what is actually accepted. #}
     <div class="orsep">or</div>
     <div class="lbl">List</div>
-    <div class="two">
+    {# .three only when Salesforce is actually wired up (SF_LOGIN_URL / SF_CONSUMER_KEY /
+       SF_CONSUMER_SECRET all set -- see _ctx). Falls back to the original two-up layout
+       with nothing missing when it is not, so a visitor without those env vars sees
+       exactly what this page always showed. #}
+    <div class="{{'three' if sf_configured else 'two'}}">
       <div>
         <form method="post" action="{{url_for('rank_sample')}}">
           <button class="btn" type="submit">Score the sample file</button>
@@ -88,6 +92,15 @@
         <p class="filehint">Extra columns are ignored. Missing ones lower confidence, not
           the score.</p>
       </div>
+      {% if sf_configured %}
+      <div>
+        <form method="post" action="{{url_for('rank_salesforce')}}">
+          <button class="btn" type="submit">Pull from Salesforce</button>
+        </form>
+        <p class="filehint">Live Lead records from your connected org, scored the same
+          way. See <span class="mono">/salesforce/leads</span> for the raw JSON.</p>
+      </div>
+      {% endif %}
     </div>
     <p class="filehint">Columns it reads, in any case or spacing:
       {% for f in fields %}<span class="mono">{{f.field}}</span>{% if not loop.last %},
