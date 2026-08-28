@@ -16,6 +16,59 @@
         Pulled live from <b>Salesforce</b> via OAuth (Client Credentials Flow) — org
         <span class="mono">{{qv.source.org}}</span>.
         <a href="{{qv.source.raw_url}}">View raw API response</a>
+        {%- if qv.source.custom_inputs and qv.summary and not qv.summary.missing_cols %}
+          <br>Every field this model scores on resolved, including the custom Lead fields
+          <span class="mono">{{qv.source.custom_inputs|join('</span> and <span class="mono">')|safe}}</span>.
+          Without them a Salesforce lead has no home for two of the four and cannot clear
+          the lowest confidence level, however clean the record is.{% endif %}
+      </div>
+    {% endif %}
+
+    {# Write-back. Sits with the provenance note rather than under the board: both answer
+         "what is the relationship between this page and the org", and the panel has to be
+         readable without scrolling past fifty leads to find it. The diff is the dry run —
+         the button sends exactly what is listed here, because results() and the write
+         route build it from the same _sf_plan. #}
+    {% if qv.wrote %}
+      <div class="runsum{% if qv.wrote.failed %} matchnote{% endif %}">
+        {%- if qv.wrote.note %}<b>Nothing was written.</b> {{qv.wrote.note}}
+        {%- else %}<b><span class="num">{{qv.wrote.ok}}</span> record(s) written back to
+          Salesforce.</b>{% if qv.wrote.failed %}
+          <span class="warnnum"><span class="num">{{qv.wrote.failed}}</span> failed.</span>{% endif %}
+          Pull again and this writes nothing: the values now match.{% endif %}
+        {%- if qv.wrote.results %}
+          <details class="sumdet"><summary>Per record</summary>
+            <div class="sumdet-bd">
+              {% for r in qv.wrote.results %}<span class="mono">{{r.id}}</span>
+                {{ 'written' if r.ok else r.error }}<br>{% endfor %}
+            </div>
+          </details>{% endif %}
+      </div>
+    {% elif qv.writeback %}
+      {% set w=qv.writeback %}
+      <div class="runsum">
+        {%- if w.refused %}<b>Write-back is unavailable.</b> {{w.refused}}
+        {%- else %}
+          Write-back to <span class="mono">{{w.org}}</span>:
+          <b><span class="num">{{w.writeable}}</span> would change</b>{%
+            if w.match %}, <span class="num">{{w.match}}</span> already match{% endif %}{%
+            if w.overridden %}, <span class="num">{{w.overridden}}</span> left alone{% endif %}{%
+            if w.unscorable %}, <span class="num">{{w.unscorable}}</span> unscorable{% endif %}.
+          <details class="sumdet"><summary>What would change</summary>
+            <div class="sumdet-bd">
+              {% for p in w.rows %}<span class="mono">{{p.id or '(no id)'}}</span>
+                {%- if p.action=='write' %} {{p.was if p.was is not none else '—'}} →
+                  <span class="num">{{p.score}}</span> · {{p.tier}} · {{p.conf}}
+                {%- else %} {{p.note}}{% endif %}<br>{% endfor %}
+            </div>
+          </details>
+          {% if w.writeable %}
+            <form method="post" action="{{qv.writeback_url}}" class="wbform">
+              <button class="btn small" type="submit">Write
+                <span class="num">{{w.writeable}}</span> record(s) to Salesforce</button>
+            </form>
+          {% endif %}
+        {% endif %}
       </div>
     {% endif %}
 

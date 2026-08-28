@@ -53,6 +53,7 @@ Grep '# DEMO:' for the spots most likely to be hit live."""
 from flask import Flask, request, render_template, redirect, url_for, Response
 from werkzeug.exceptions import HTTPException, RequestEntityTooLarge
 import io, os, csv, math, re, json, secrets, collections, logging, traceback, threading, time
+import datetime, hashlib
 import urllib.request, urllib.parse, urllib.error
 import scorer
 
@@ -163,6 +164,27 @@ APPLIED={'cut':dict(scorer.DEFAULT_CUTOFFS)}
 
 # Short column heading per score-driving field, for the "why" table.
 BASE_PCT=round(scorer.BASE*100,1)  # read from meta, never hardcoded
+
+# Which fitted model produced a number, short enough for a CRM text field. Written onto
+# every Lead this tool scores back into Salesforce, because a score is only comparable to
+# another score from the same model, and a CRM keeps numbers long after anybody remembers
+# which run made them.
+#
+# DERIVED from the artifact, not declared in meta.json. A hand-maintained version string
+# is a thing somebody forgets to bump on the one retrain where it mattered; a content hash
+# cannot be forgotten, and it moves when and only when model.joblib moves — which is
+# exactly the question "are these two scores comparable" is asking. Hashed once at import
+# alongside the model itself: the file cannot change under a running process.
+def _model_version():
+    try:
+        with open(os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                               'model.joblib'), 'rb') as fh:
+            return 'model-'+hashlib.sha256(fh.read()).hexdigest()[:12]
+    except Exception:
+        # A missing artifact is already E500 at import and this process is dead either
+        # way. This exists so the version string can never be the thing that kills it.
+        return 'model-unknown'
+MODEL_VERSION=_model_version()
 
 # friendly label, scorer field name, URL param, example.
 # The single-lead form is a GET, so the param is what shows up in the address bar —
@@ -482,6 +504,22 @@ HEADER_MAP=csv_io.build_header_map(FIELDS)
 #   hubspotscore                 HubSpot's own predictive lead score -> legacy_score
 #   lead_source / leadscore      common custom-property spellings on either platform
 #   hs_object_id                 HubSpot's own contact/record id
+#   marketing_channel_c          Marketing_Channel__c, a CUSTOM Lead field this project's
+#                                org carries -> utm_medium
+#   prior_score_c                Prior_Score__c -> legacy_score
+#
+# Those last two are why writeback exists at all in the shape it does. utm_medium and
+# legacy_score have NO home on a standard Lead, and LeadSource/Rating had a home with the
+# wrong vocabulary, so a Salesforce-sourced lead failed all four KEY_FIELDS and was capped
+# at Low confidence however clean the record was. Two custom fields plus two widened
+# standard picklists is what lets one reach High. Held by
+# test_a_fully_mapped_salesforce_lead_reaches_high_confidence.
+#
+# Both need an EXPLICIT alias line and always will: _norm_header turns
+# 'Marketing_Channel__c' into 'marketing_channel_c', never 'utm_medium'. The '__c' suffix
+# means no custom field on any object can ever resolve by accident, whatever it is named —
+# which is why the names above are chosen to read well rather than contorted toward a
+# match that was never available.
 #
 # Real orgs customize field names further (a custom object, a renamed property) — that
 # widening is the same one-line-per-alias shape as everything below, which is the point:
@@ -491,6 +529,7 @@ CRM_ALIASES={'leadsource':'channel', 'hs_analytics_source':'channel', 'lead_sour
              'rating':'icp_category',
              'annualrevenue':'company_annual_revenue',
              'hubspotscore':'legacy_score', 'leadscore':'legacy_score',
+             'marketing_channel_c':'utm_medium', 'prior_score_c':'legacy_score',
              'hs_object_id':'lead_id'}
 API_HEADER_MAP=dict(HEADER_MAP, **CRM_ALIASES)
 
@@ -911,6 +950,11 @@ def results(token):
             total=len(rows), matching=len(sel), page=page, npages=npages, per=per,
             sizes=PAGE_SIZES, first=start+1, last=start+len(pagerows), link=link, token=token,
             filtered=(tier!='all' or conf!='all' or bool(q)), summary=payload.get('summary'),
+            # The write-back panel, built from the rows as they are tiered RIGHT NOW, so
+            # what it offers to send is what the board above it is showing. None on every
+            # board that is not a live Salesforce pull, and on a declined one.
+            writeback=_sf_plan(payload, rows), wrote=payload.get('writeback'),
+            writeback_url=url_for('writeback', token=token),
             base_url=url_for('results', token=token),
             export_url=url_for('export', token=token,
                                **{k:v for k,v in dict(tier=tier,conf=conf,q=q).items()
@@ -1093,8 +1137,35 @@ def _api_error(message, status):
 # being the latest version — any supported version works.
 # ---------------------------------------------------------------------------
 SF_API_VERSION='v59.0'
-SF_LEAD_FIELDS='Id,LeadSource,AnnualRevenue,State,Rating'
+# The SELECT list, in three groups, because they are read for three different reasons.
+#
+#   the scoring inputs   LeadSource / AnnualRevenue / State / Rating, plus the two CUSTOM
+#                        fields that gave utm_medium and legacy_score a home at last (see
+#                        CRM_ALIASES). Before those two existed a Salesforce lead failed
+#                        all four KEY_FIELDS and could not clear Low confidence.
+#   this tool's own      read BACK so writeback can tell a record that already matches
+#                        from one that needs writing. Idempotency is a comparison and a
+#                        comparison needs the current value; without these the tool would
+#                        rewrite six identical fields onto every Lead on every pull.
+#   the audit pair       LastModifiedById / LastModifiedDate, so "has a human touched this
+#                        since we last scored it" is decidable from the pull we already
+#                        made rather than from a second query per record.
+SF_INPUT_FIELDS=('LeadSource','AnnualRevenue','State','Rating',
+                 'Marketing_Channel__c','Prior_Score__c')
+# THE fields this tool owns, and the only fields it may ever write. Everything else on a
+# Lead belongs to somebody else and stays that way. Scored_At is in the list but is
+# deliberately absent from the value comparison — see _sf_verdict.
+SF_WRITE_FIELDS=('LeadScorer_Score__c','LeadScorer_Tier__c','LeadScorer_Next_Action__c',
+                 'LeadScorer_Confidence__c','LeadScorer_Scored_At__c',
+                 'LeadScorer_Model_Version__c')
+SF_AUDIT_FIELDS=('LastModifiedById','LastModifiedDate')
+SF_LEAD_FIELDS=','.join(('Id',)+SF_INPUT_FIELDS+SF_WRITE_FIELDS+SF_AUDIT_FIELDS)
 SF_LEAD_LIMIT=50
+# sObject Collections' own ceiling. SF_LEAD_LIMIT above means a real pull never reaches it
+# today, so the chunking below is currently theoretical — implemented and tested anyway,
+# because the day the pull cap is raised is not the day to discover the writer never
+# chunked. test_a_write_larger_than_one_batch_is_split patches this down to reach it.
+SF_WRITE_BATCH=200
 
 # Not auth -- both routes below stay open on purpose, same as everywhere else in this file.
 # This is cheap insurance of a different kind: /salesforce/leads and /rank/salesforce are
@@ -1129,7 +1200,15 @@ def _sf_token():
     for a short-lived access token, scoped to whichever user the app's policy runs as
     (see Setup -> the app -> Policies -> Run As). Raises RuntimeError with Salesforce's own
     error body on failure -- see api's caller, which turns that into a plain-sentence
-    response instead of a stack trace, matching this file's error policy everywhere else."""
+    response instead of a stack trace, matching this file's error policy everywhere else.
+
+    Returns (access_token, instance_url, user_id). The user id is pulled out of the
+    identity URL Salesforce hands back with the token (.../id/<org id>/<user id>), so
+    knowing WHICH user this integration is costs no extra call and no extra configuration.
+    Writeback needs it and cannot be safely done without it: 'a human changed this' means
+    LastModifiedById is anybody but us, and with no us there is nothing to compare to.
+    Empty if Salesforce did not return one, which _sf_plan treats as a reason to refuse
+    the whole write rather than as a reason to guess."""
     login_url=os.environ.get('SF_LOGIN_URL')
     consumer_key=os.environ.get('SF_CONSUMER_KEY')
     consumer_secret=os.environ.get('SF_CONSUMER_SECRET')
@@ -1145,19 +1224,20 @@ def _sf_token():
             data=json.loads(resp.read())
     except urllib.error.HTTPError as e:
         raise RuntimeError(f'Salesforce auth failed ({e.code}): {e.read().decode(errors="replace")}') from e
-    return data['access_token'], data['instance_url']
+    return (data['access_token'], data['instance_url'],
+            str(data.get('id') or '').rstrip('/').rsplit('/',1)[-1])
 
 def _sf_query_leads():
-    """Token + SOQL query -> (raw Salesforce Lead records, instance_url). Records are a list
-    of dicts in Salesforce's own field names, unmapped. instance_url is returned alongside
-    them -- not just for the request itself -- because callers use it as PROOF this came
-    from a real org: it's shown on the ranked board and in the raw JSON view so a technical
+    """Token + SOQL query -> (raw Salesforce Lead records, instance_url, user_id). Records
+    are a list of dicts in Salesforce's own field names, unmapped. instance_url is returned
+    alongside them -- not just for the request itself -- because callers use it as PROOF
+    this came from a real org: it's shown on the ranked board and in the raw JSON view so a technical
     reader (an engineer skimming this after a recruiter forwards it) can see it hit an
     actual *.my.salesforce.com domain via OAuth, not a canned fixture. Raises RuntimeError
     with Salesforce's own error text on either step failing -- both callers below turn that
     into a plain-sentence response, never a stack trace, matching this file's error policy
     everywhere else."""
-    token, instance_url=_sf_token()
+    token, instance_url, user_id=_sf_token()
     soql=f'SELECT {SF_LEAD_FIELDS} FROM Lead LIMIT {SF_LEAD_LIMIT}'
     q=urllib.parse.urlencode({'q':soql})
     req=urllib.request.Request(
@@ -1165,7 +1245,7 @@ def _sf_query_leads():
         headers={'Authorization':f'Bearer {token}'})
     try:
         with urllib.request.urlopen(req, timeout=15) as resp:
-            return json.loads(resp.read()).get('records',[]), instance_url
+            return json.loads(resp.read()).get('records',[]), instance_url, user_id
     except urllib.error.HTTPError as e:
         raise RuntimeError(f'Salesforce query failed ({e.code}): '
                            f'{e.read().decode(errors="replace")}') from e
@@ -1185,7 +1265,7 @@ def salesforce_leads():
                           "unauthenticated route burning the connected org's daily API "
                           'limit. Try again shortly.', 429)
     try:
-        records,instance_url=_sf_query_leads()
+        records,instance_url,_user_id=_sf_query_leads()
     except RuntimeError as e:
         return _api_error(str(e), 502)
     if not records:
@@ -1203,7 +1283,8 @@ def salesforce_leads():
 # lead_id, which is not itself a FIELDS entry) plus the state -> time_zone derivation
 # _api_map_lead always does. Tracks SF_LEAD_FIELDS by hand, the same way OFFERED tracks the
 # model's fitted vocabulary by hand -- widen one, widen the other.
-SF_MAPPED_FIELDS={'channel','icp_category','company_annual_revenue','state','time_zone'}
+SF_MAPPED_FIELDS={'channel','icp_category','company_annual_revenue','state','time_zone',
+                  'utm_medium','legacy_score'}
 
 def _rank_salesforce(cuts):
     """Pull real Lead records from Salesforce and rank them through the exact same
@@ -1221,7 +1302,7 @@ def _rank_salesforce(cuts):
                         "unauthenticated button burning the connected org's daily API "
                         'limit. Try again shortly.')
     try:
-        records,instance_url=_sf_query_leads()
+        records,instance_url,user_id=_sf_query_leads()
     except RuntimeError as e:
         return _decline(f'Could not pull from Salesforce: {e}')
     if not records:
@@ -1237,8 +1318,271 @@ def _rank_salesforce(cuts):
             # everything downstream of it, exactly as a new CSV column would be.
             'header':SF_LEAD_FIELDS.split(',')}
     source={'org':instance_url.replace('https://','').replace('http://',''),
-            'raw_url':url_for('salesforce_leads')}
-    return _rank_leads(leads, report, cuts, source=source, origin='salesforce')
+            'raw_url':url_for('salesforce_leads'),
+            # Named on the board, not just in the README: these two custom fields are the
+            # entire reason a Salesforce lead can now reach High confidence, and a claim
+            # about a schema decision is worth more next to the board it produced than in
+            # a document nobody has open. Derived from SF_INPUT_FIELDS so the page cannot
+            # name a field the query does not ask for.
+            'custom_inputs':[f for f in SF_INPUT_FIELDS if f.endswith('__c')]}
+    payload=_rank_leads(leads, report, cuts, source=source, origin='salesforce')
+    # The raw records ride along on the payload so writeback can diff against what the org
+    # currently holds without going back to Salesforce for it. Attached only to a payload
+    # that actually has a queue: a DECLINED board never gets an 'sf' key, so there is
+    # nothing for _sf_plan to build a write out of and nothing for the route to send. The
+    # first and most important writeback rule is enforced by the shape of the data rather
+    # than by a check somebody could forget to write.
+    if 'queue' in payload:
+        payload['sf']={'org':source['org'],'user_id':user_id,
+                       'raw':{str(r.get('Id') or ''):r for r in records}}
+    return payload
+
+# ---------------------------------------------------------------------------
+# WRITEBACK. The pull above puts a verdict on a page; this puts it on the record, which is
+# where a rep actually works. SF_WRITE_FIELDS is the whole surface -- six fields this tool
+# owns and the only ones it may write.
+#
+# FIVE RULES, in the order they matter. Each is a way this could put a number it cannot
+# defend into a system of record, which is worse here than anywhere else in this codebase:
+# a bad board is a page somebody closes, a bad write is a field somebody else's report
+# reads six months from now.
+#
+#   1. A DECLINED BOARD NEVER WRITES. Below MATCH_REFUSE the tool would not put the leads
+#      in an order at all; writing those same scores into the CRM is the identical guess
+#      wearing a different hat. Enforced structurally -- see the 'sf' key above -- rather
+#      than by a check. Same rule one row down: a row that could not be scored has nothing
+#      to write and is reported, never written.
+#   2. DRY RUN FIRST. The panel on the board IS the diff, and the button sends what the
+#      panel showed because both go through _sf_plan. It costs no extra API call: the
+#      current values came back in the pull that built the board.
+#   3. IDEMPOTENT. A record whose values already match is not written, so pulling twice
+#      writes once. Scored_At is deliberately outside that comparison -- it changes every
+#      run by definition, and comparing it would make every record differ forever.
+#   4. NEVER CLOBBER A HUMAN. LastModifiedById is somebody other than the integration user
+#      AND LastModifiedDate is newer than our own Scored_At -> skip it and say so.
+#   5. PARTIAL FAILURE IS REPORTED, NOT SWALLOWED. allOrNone=false, and every record's own
+#      result comes back to the page by id.
+# ---------------------------------------------------------------------------
+def _sf_verdict(r):
+    """One scored row -> the values this tool owns for it. THE definition of what
+    writeback writes, read by the diff and by the send, so the preview cannot describe one
+    thing and the write do another.
+
+    Scored_At is NOT here. It is stamped at send time in _sf_write_back, because it is the
+    one field whose value is 'now' rather than a fact about the lead -- including it would
+    make every record differ from itself on every pull and defeat rule 3 entirely.
+
+    Name and action come from scorer.TIER rather than off the row, the same way _retier
+    does it, so a re-tiered board writes the tier it is showing."""
+    return {'LeadScorer_Score__c':round(r['score'],4),
+            'LeadScorer_Tier__c':scorer.TIER[r['tier']]['name'],
+            'LeadScorer_Next_Action__c':scorer.TIER[r['tier']]['action'],
+            'LeadScorer_Confidence__c':r['confidence'],
+            'LeadScorer_Model_Version__c':MODEL_VERSION}
+
+def _sf_dt(v):
+    """A Salesforce datetime string -> an aware datetime, or None for anything unreadable.
+
+    Salesforce writes '2026-08-28T03:40:00.000+0000', which fromisoformat has handled
+    since 3.11. None means 'cannot decide', and the one caller treats that as a reason to
+    skip rather than as a reason to write -- see _sf_human_edited."""
+    try: return datetime.datetime.fromisoformat(str(v))
+    except (TypeError,ValueError): return None
+
+def _sf_human_edited(raw, user_id):
+    """Has somebody other than the integration user touched this record since we last
+    scored it? True means hands off.
+
+    Three ways this answers no, and the order is the argument:
+      - we have never written to it (no Scored_At), so there is nothing of ours to clobber
+        and this is a first write, not an overwrite;
+      - the last edit was ours, which is the normal case on a second pull;
+      - the last edit predates our stamp, so whatever it was, we have written since.
+    Anything else -- including a timestamp neither side can parse -- is a yes. The check
+    errs toward skipping on purpose: a lead we decline to update is visible on the page and
+    costs somebody one click, and a lead we overwrite is somebody's work gone with nothing
+    left to notice.
+
+    Ids are compared on the first 15 characters because Salesforce hands out both the
+    15-character case-sensitive form and the 18-character one for the same record, and
+    which one arrives depends on the endpoint."""
+    scored_at=_sf_dt(raw.get('LeadScorer_Scored_At__c'))
+    if scored_at is None: return False
+    if str(raw.get('LastModifiedById') or '')[:15]==str(user_id or '')[:15]: return False
+    modified=_sf_dt(raw.get('LastModifiedDate'))
+    if modified is None: return True
+    return modified>scored_at
+
+def _sf_same(current, want):
+    """Is the value already in Salesforce the value we would write?
+
+    The number is compared at the precision it is stored at (Number(2,4)) rather than as
+    an exact float, because a value that made the round trip through JSON and back is not
+    bit-identical to the one that went out and a tool that rewrote every record forever
+    over the last decimal place would not be idempotent in any sense a person means it."""
+    if isinstance(want,float):
+        try: return current is not None and round(float(current),4)==want
+        except (TypeError,ValueError): return False
+    return str(current or '')==str(want or '')
+
+def _sf_plan(payload, rows, user_id=None):
+    """A Salesforce board + its rows as currently tiered -> what a write would do to each
+    record. None when there is nothing writeable, which is every case that matters:
+    a CSV or sample board, and a DECLINED Salesforce board (no queue, so no 'sf' key).
+
+    Called twice with the same inputs -- once by results() to draw the panel and once by
+    the write route to send it -- which is what makes the dry run a promise rather than a
+    description. Taking `rows` rather than reading payload['queue'] is the other half of
+    that: results() re-tiers against whatever cutoffs a manager has since applied, and the
+    write has to send the tier the board is showing, not the one it was scored with."""
+    sf=payload.get('sf')
+    if not sf or 'queue' not in payload: return None
+    who=user_id if user_id is not None else sf.get('user_id')
+    if not who:
+        # No identity means rule 4 is undecidable, and an undecidable clobber check is not
+        # a reason to write carefully -- it is a reason not to write. Refusing the whole
+        # plan is the same posture the file-level match check takes on a board.
+        return {'org':sf['org'],'refused':
+                'Salesforce did not return an identity for this integration user, so '
+                'there is no way to tell this tool\'s own edits from a person\'s. Nothing '
+                'will be written.','rows':[],'writeable':0,'match':0,'overridden':0,
+                'unscorable':0}
+    out=[]
+    for r in rows:
+        lid=str(r.get('lead_id') or '')
+        raw=sf['raw'].get(lid) or {}
+        out.append(_sf_row_plan(r, raw, who))
+    counts=collections.Counter(p['action'] for p in out)
+    return {'org':sf['org'],'refused':None,'rows':out,
+            'writeable':counts.get('write',0),'match':counts.get('match',0),
+            'overridden':counts.get('overridden',0),
+            'unscorable':counts.get('unscorable',0)}
+
+def _sf_row_plan(r, raw, user_id):
+    """One row -> one line of the diff. Four outcomes and they are checked in this order
+    for a reason.
+
+    unscorable first: a row with no id or no score has no verdict to write, whatever else
+    is true of it.
+
+    match BEFORE overridden, which is the one ordering here that is not obvious. All
+    Salesforce can tell us is that the RECORD changed and who changed it -- not which
+    field. Without field history there is no way to know whether a person edited a field
+    this tool owns or renamed the company, so checking overridden first would report a
+    record as manually overridden because somebody fixed a typo in an address. If our
+    values already match, the answer is 'nothing to do' regardless of who touched it, and
+    that is both true and quieter. See docs/known-issues.md for what this still over-reports."""
+    lid=str(r.get('lead_id') or '')
+    if r.get('error') or r.get('score') is None:
+        return {'action':'unscorable','id':lid,
+                'note':r.get('error') or 'no score, so there is nothing to write'}
+    want=_sf_verdict(r)
+    now={'score':want['LeadScorer_Score__c'],'tier':want['LeadScorer_Tier__c'],
+         'conf':want['LeadScorer_Confidence__c']}
+    if all(_sf_same(raw.get(k), v) for k,v in want.items()):
+        return dict(action='match', id=lid, note='already matches, not written', **now)
+    if _sf_human_edited(raw, user_id):
+        return dict(action='overridden', id=lid,
+                    note='edited in Salesforce since this tool last scored it, so it is '
+                         'left alone', **now)
+    return dict(action='write', id=lid, fields=want,
+                was=(None if raw.get('LeadScorer_Score__c') is None
+                     else round(float(raw['LeadScorer_Score__c']),4)),
+                note='', **now)
+
+def _sf_patch(instance_url, token, body):
+    """ONE sObject Collections PATCH -> Salesforce's per-record result list, in the order
+    the records went out. The only function here that touches the network on a write, and
+    the one the tests replace.
+
+    allOrNone is false in the body every caller builds: 199 good records must not be lost
+    to one that violates a validation rule somebody added last week, and which one failed
+    is information this page shows rather than swallows."""
+    req=urllib.request.Request(
+        f'{instance_url}/services/data/{SF_API_VERSION}/composite/sobjects',
+        data=json.dumps(body).encode(), method='PATCH',
+        headers={'Authorization':f'Bearer {token}','Content-Type':'application/json'})
+    try:
+        with urllib.request.urlopen(req, timeout=30) as resp:
+            return json.loads(resp.read())
+    except urllib.error.HTTPError as e:
+        raise RuntimeError(f'Salesforce write failed ({e.code}): '
+                           f'{e.read().decode(errors="replace")}') from e
+
+def _sf_write_back(plan):
+    """Send a plan. Returns what happened, per record, always.
+
+    Rate limited per BATCH, on the same hourly budget the two read routes share, and
+    checked before each call so the cap bounds the org's API usage rather than describing
+    it afterwards -- the same reasoning as _sf_rate_limited's own docstring. Running out
+    mid-write is reported as records not attempted, which is a different sentence from
+    records that failed and has to stay one."""
+    todo=[p for p in plan['rows'] if p['action']=='write']
+    if not todo:
+        return {'sent':0,'ok':0,'failed':0,'not_attempted':0,'results':[],
+                'note':'nothing to write'}
+    token,instance_url,_user=_sf_token()
+    stamp=datetime.datetime.now(datetime.timezone.utc).replace(microsecond=0).isoformat()
+    results=[]; not_attempted=[]
+    for i in range(0, len(todo), SF_WRITE_BATCH):
+        chunk=todo[i:i+SF_WRITE_BATCH]
+        if _sf_rate_limited():
+            not_attempted=todo[i:]
+            break
+        body={'allOrNone':False,
+              'records':[dict({'attributes':{'type':'Lead'},'Id':p['id']}, **p['fields'],
+                              **{'LeadScorer_Scored_At__c':stamp}) for p in chunk]}
+        try:
+            answers=_sf_patch(instance_url, token, body)
+        except RuntimeError as e:
+            # A transport-level failure -- an expired token, a 500 -- is not a per-record
+            # error and says nothing about the batches already sent. Letting it out of
+            # here would throw away the results of every batch before it and report a
+            # partial write as if nothing had happened, which is the one thing rule 5
+            # exists to prevent. This chunk is failed, the rest is not attempted, and the
+            # page says both. Stopping rather than continuing because the next call would
+            # fail the same way and spend rate-limit budget finding out.
+            for p in chunk:
+                results.append({'id':p['id'],'ok':False,'error':str(e)})
+            not_attempted=todo[i+len(chunk):]
+            break
+        for p,res in zip(chunk, answers):
+            errs=res.get('errors') or []
+            results.append({'id':p['id'],'ok':bool(res.get('success')),
+                            'error':'; '.join(e.get('message','') for e in errs)})
+    for p in not_attempted:
+        results.append({'id':p['id'],'ok':False,
+                        'error':f'not attempted: this demo has hit its cap of '
+                                f'{SF_MAX_CALLS_PER_HOUR} Salesforce calls per hour'})
+    return {'sent':len(todo)-len(not_attempted),
+            'ok':sum(1 for r in results if r['ok']),
+            'failed':sum(1 for r in results if not r['ok']),
+            'not_attempted':len(not_attempted),'results':results,'note':None,
+            'stamp':stamp}
+
+@app.route('/results/<token>/writeback', methods=['POST'])
+def writeback(token):
+    """Send the plan the board is showing. Post/Redirect/Get like every other route that
+    changes something, so a refresh cannot write twice -- which on this route is the
+    difference between an idempotent tool and one that only claims to be.
+
+    The plan is rebuilt here rather than carried over from the panel, against the cutoffs
+    in force at this moment. That is not distrust of the preview; it is the only way the
+    write can be true to a board a manager re-tiered while looking at it."""
+    payload=_RESULTS.get(token)
+    if payload is None or 'queue' not in payload:
+        return redirect(url_for('results', token=token), code=303)
+    cuts=APPLIED['cut']
+    plan=_sf_plan(payload, [_retier(r, cuts) for r in payload['queue']])
+    if not plan or plan['refused']:
+        return redirect(url_for('results', token=token), code=303)
+    try:
+        payload['writeback']=_sf_write_back(plan)
+    except RuntimeError as e:
+        payload['writeback']={'sent':0,'ok':0,'failed':0,'not_attempted':0,'results':[],
+                              'note':str(e)}
+    return redirect(url_for('results', token=token), code=303)
+
 
 @app.route('/rank/salesforce', methods=['POST'])
 def rank_salesforce():

@@ -210,7 +210,7 @@ def test_a_run_is_judged_against_its_own_source(store, client, monkeypatch):
     monkeypatch.setattr(app, '_sf_query_leads', lambda: (
         [{'Id': f'00Q{i:015d}', 'LeadSource': 'google', 'AnnualRevenue': 2_500_000,
           'State': 'Texas', 'Rating': 'High Value'} for i in range(5)],
-        'https://example-dev-ed.develop.my.salesforce.com'))
+        'https://example-dev-ed.develop.my.salesforce.com', '0055g00000ABCDEAA3'))
     posted = client.post('/rank/salesforce')
     client.get(posted.headers['Location'])
     upload(client, csv_bytes(COLUMNS))
@@ -234,7 +234,7 @@ def test_each_intake_path_records_its_own_source(store, client, monkeypatch):
     monkeypatch.setattr(app, '_sf_query_leads', lambda: (
         [{'Id': '00Q000000000001', 'LeadSource': 'google', 'AnnualRevenue': 2_500_000,
           'State': 'Texas', 'Rating': 'High Value'}],
-        'https://example-dev-ed.develop.my.salesforce.com'))
+        'https://example-dev-ed.develop.my.salesforce.com', '0055g00000ABCDEAA3'))
     client.get(client.post('/rank/salesforce').headers['Location'])
 
     assert {r['source'] for r in logged()} == set(app.ORIGINS)

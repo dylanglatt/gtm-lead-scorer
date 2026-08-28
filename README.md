@@ -116,7 +116,7 @@ its sharpest tests are the ones that break that store and then assert on the ran
   flag on the run where the column set changed or coverage crossed below the notice
   threshold. See [Run history](#run-history-and-health) below.
 
-The edges of that check, and five other things worth knowing before you trust this, are
+The edges of that check, and seven other things worth knowing before you trust this, are
 written down in [docs/known-issues.md](docs/known-issues.md).
 
 ![A file the model can only half read](docs/mismatch.png)
@@ -162,28 +162,76 @@ org, on every click.
   `/salesforce/leads`, the raw JSON view, so a skeptical reader doesn't have to take the app's
   word for it. Real Lead Ids (`00Q…`) and Salesforce's own field shapes are the actual
   evidence.
-- **An honest ceiling, not a bug** — a standard Salesforce Lead has no native field for two of
-  the four things this model scores on ("Marketing channel" and "Prior score" are concepts
-  this schema invented, not ones Salesforce ships). Every Salesforce-sourced lead is missing
-  at least those two, which caps confidence below High regardless of how clean the rest of the
-  record is. A real deployment would map those onto custom fields; a demo org does not have
-  any, and the tool says so rather than pretending otherwise.
+- **The schema decision that lifted every lead off the floor** — this used to be documented
+  here as a ceiling, and the shape of it was more interesting than the version written down.
+  Two of the four fields the model scores on had *no home at all* on a standard Lead
+  (`utm_medium`, `legacy_score` — "Marketing channel" and "Prior score" are concepts this
+  schema invented, not ones Salesforce ships). The other two had a home with **the wrong
+  vocabulary**: `LeadSource` ships `Web / Phone Inquiry / Partner Referral / Purchased List /
+  Other` and `Rating` ships `Hot / Warm / Cold`, and not one of those six values is one the
+  model was fit on. So a Salesforce lead failed all four scoring fields, not two, and every
+  single one came back at **Low confidence** however clean the record was.
+
+  The fix is four changes to the org and two lines of alias: custom fields
+  `Marketing_Channel__c` and `Prior_Score__c` for the two with no home, and the fitted values
+  added to the `LeadSource` and `Rating` picklists for the two with the wrong one. A seeded
+  lead now reaches **High confidence** with nothing unusable. The before and after are pinned
+  side by side in `test_a_fully_mapped_salesforce_lead_reaches_high_confidence` — the "after"
+  alone would prove nothing.
+
+  Two details worth stealing if you do this in your own org. The picklist **value** has to be
+  the exact fitted string (`paid search`, not `Paid Search`) — Salesforce lets label and value
+  differ and the API returns the value, so a nice label costs nothing. And a custom field can
+  never resolve by accident: `_norm_header` turns `Marketing_Channel__c` into
+  `marketing_channel_c`, so every `__c` field needs an explicit line in `CRM_ALIASES`, which
+  is why the names above are chosen to read well rather than contorted toward a match that
+  was never available.
+
+- **Writeback: the verdict goes back onto the record** — a score that lives only in a web page
+  is a score nobody acts on. Pull a board and it carries a write-back panel showing exactly
+  what would change on which records; one confirm sends it. Six fields, `LeadScorer_*`, and
+  they are the only fields this tool will ever write.
+
+  Four rules, in the order they matter. **A declined board never writes** — below
+  `MATCH_REFUSE` the tool would not put those leads in an order, so writing the same scores
+  into the CRM would be that refusal quietly reversed by a different route. It is enforced by
+  the shape of the data rather than by a check: a declined payload has no queue, so there is
+  nothing to build a write out of. **The dry run is a promise, not a description** — the panel
+  and the button call the same `_sf_plan`, so what you confirm is what was listed.
+  **Idempotent** — a record whose values already match is not written, so pulling twice writes
+  once. **Never clobber a human** — if somebody edited the record since this tool last scored
+  it, it is skipped and reported rather than overwritten. That check is conservative in a way
+  worth knowing about; [known issue 7](docs/known-issues.md) has the reproduction.
+
+  Batched through sObject Collections at 200 a call with `allOrNone=false`, sharing the same
+  hourly budget as the pull, and every record's own result comes back to the page — including
+  which ones failed and what Salesforce said about them.
 - **A rate limit protects the connected org, not the tool** — `/rank/salesforce` and
   `/salesforce/leads` are intentionally unauthenticated, same as every other route here, but
   unlike the rest they place a real call against a real external API on every hit. A sliding
   window caps both routes (they share one budget) at `SF_MAX_CALLS_PER_HOUR` pulls, so a
   page that gets shared around can't quietly burn through a Developer Edition org's daily API
   limit.
+- **Checking an org before you point this at it** — `scripts/check_salesforce_schema.py`
+  describes Lead **as the integration user** and reports every field writeback needs: present,
+  right type, right scale, right picklist values, and actually updateable. `updateable` there
+  is the real field-level-security answer, not the one Setup shows an admin — which is the
+  version that looks fine right up until a write comes back with
+  `INSUFFICIENT_ACCESS_ON_CROSS_REFERENCE_ENTITY` and no useful field name. It exits non-zero,
+  so it works as a setup step and not only as something to read.
 - **Seeding a demo org** — `scripts/seed_salesforce_leads.py` creates a handful of realistic
-  mock Leads (mixed vocabulary, revenue bands that land inside real scoring boundaries);
+  mock Leads (mixed vocabulary, revenue bands that land inside real scoring boundaries,
+  and both custom input fields populated so a fresh seed produces High-confidence leads);
   `scripts/reset_salesforce_leads.py` wipes every Lead in the org first, since a fresh
   Developer Edition org ships with its own unrelated demo Leads that would otherwise dilute
   the mock data below the ranking threshold. Both use the same three env vars and Client
   Credentials Flow as the app itself.
 
 Covered by `test_salesforce.py`: the field mapping, the provenance note on both a ranked and
-a declined board, the button's visibility, the failure paths (bad auth, an empty org), and the
-rate limit — including that a refused pull never reaches Salesforce at all.
+a declined board, the button's visibility, the failure paths (bad auth, an empty org), the
+rate limit — including that a refused pull never reaches Salesforce at all — and every
+writeback rule above, each asserted on what did or did not reach the network rather than on
+the absence of an error.
 
 ## Run history and /health
 
@@ -273,6 +321,8 @@ within three points of the figures they replaced.
   that a broken store cannot cost a rep a board
 - `scripts/shoot_screenshots.py` — regenerates the images above
 - `scripts/make_test_fixtures.py` — regenerates the CSV fixtures the tests read
+- `scripts/check_salesforce_schema.py` — preflight: does a connected org have the fields
+  writeback needs, as the integration user actually sees them
 - `scripts/seed_salesforce_leads.py` / `scripts/reset_salesforce_leads.py` — populate or wipe
   Leads in a connected Salesforce org, for trying **Pull from Salesforce** against real data
 - `Procfile` / `render.yaml` / `Dockerfile` — the three ways to deploy it

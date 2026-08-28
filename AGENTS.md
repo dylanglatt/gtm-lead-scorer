@@ -35,6 +35,10 @@ function.
 Each of the four names itself to run history as it goes past `_summarize`. `GET /health`
 reads that history back and is not an intake: loading it scores nothing and logs nothing.
 
+One path out, and it is the only one: `POST /results/<token>/writeback` puts the verdict on
+the Salesforce Lead record. It scores nothing — it sends what a board already decided —
+and it is the only place this tool writes to a system it does not own.
+
 `scorer.score_lead` is the only place a lead is judged. There is no second scoring path
 and there must not be one: an earlier version had a `from_form` flag for a single feature,
 and the same lead scored 38% Warm typed and 3.4% Cold uploaded. Held by
@@ -54,6 +58,11 @@ and the same lead scored 38% Warm typed and 3.4% Cold uploaded. Held by
 - **`score_row` / `score_rows`** (`app.py`) is the batch entry. It owns two rules the
   single-lead form does not have: a row with no id never reaches the model, and anything
   the model throws is caught per row so one bad row cannot take a file down.
+- **`SF_WRITE_FIELDS` / `_sf_plan`** (`app.py`) is the writeback seam. `SF_WRITE_FIELDS`
+  is the complete list of fields this tool owns and the only ones it may write; everything
+  else on a Lead belongs to somebody else. `_sf_plan` builds the diff, and results() and
+  the write route both call it, which is what makes the dry run a promise rather than a
+  description — the button cannot send something the panel did not show.
 - **`APPLIED` cutoffs** (`app.py`) are the team-wide tier boundaries. Only Manager
   Calibration writes them. Moving a cutoff re-tiers a stored board; it never re-scores it.
 - **`scorer.TIERS`** is the single source for tier names, actions and colour keys. Nothing
@@ -95,6 +104,12 @@ here means the change is wrong, not that the test is stale.
 | A renamed or dropped column is not | `test_the_fingerprint_moves_when_a_column_is_renamed_or_dropped` |
 | A failed history write leaves the scoring run intact | `test_a_failed_write_leaves_the_scoring_run_intact` |
 | No store configured ranks exactly as a store does | `test_no_store_configured_ranks_normally_and_health_says_so` |
+| A refused board never writes to the CRM | `test_a_refused_board_writes_nothing` |
+| Drawing the write-back panel sends nothing | `test_the_dry_run_sends_no_write_at_all` |
+| A record that already matches is not written | `test_an_unchanged_record_is_not_written` |
+| A record a human edited is skipped and reported | `test_a_manually_overridden_record_is_skipped_and_reported` |
+| Writeback touches no field outside `SF_WRITE_FIELDS` | `test_the_write_stamps_scored_at_and_the_model_version` |
+| A fully mapped Salesforce lead reaches High | `test_a_fully_mapped_salesforce_lead_reaches_high_confidence` |
 
 The golden export test is the tripwire. It pins the exported bytes for `demo_leads.csv`,
 so a change anywhere else cannot quietly move a score. If it fails and you believe the new
@@ -119,10 +134,20 @@ for either, and `/health` separates them: not configured is a supported way to r
 app, unreadable is a fault. Collapsing the two would let an unmounted disk read as a quiet
 week, which is the exact silent-but-fine failure the page exists to remove.
 
+**Writing to a system you do not own is a different act from reading one.** Everything
+before writeback produced a page somebody could close. A Lead field is read by somebody
+else's report six months later, so the four rules in the writeback block of `app.py` —
+never from a declined board, dry run first, idempotent, never clobber a human — are not
+politeness. Anything added that writes outward inherits all four, and the fifth: report
+partial failure per record rather than swallowing it.
+
 **Anything that calls an external system gets a rate limit.** Every route here is
 unauthenticated on purpose, but `/rank/salesforce` and `/salesforce/leads` place a real
 call against a real org on every hit. `SF_MAX_CALLS_PER_HOUR` caps them on a shared sliding
 window, checked before the call so it bounds usage rather than describing it afterwards.
+Writeback spends from that same budget, one slot per batch, checked before each send;
+records past the cap are reported as not attempted, which is a different sentence from
+records that failed and must stay one.
 
 **Errors are sentences.** A bad file gets a plain-English explanation, never a stack trace.
 `csv.field_size_limit` is raised and `csv.Error` is caught because an unclosed quote is a
@@ -174,7 +199,10 @@ wrong. Stop and ask rather than choosing for me:
   a lead arrived from
 - storage decisions: where state lives, and what happens to it on redeploy
 - creating or renaming fields in a connected Salesforce org, which is state that is not
-  easy to undo
+  easy to undo. `scripts/check_salesforce_schema.py` says whether an org already has what
+  writeback needs; it describes as the integration user, so `updateable` there is the real
+  field-level-security answer rather than what Setup shows an admin
+- widening what writeback owns. `SF_WRITE_FIELDS` is a closed list on purpose
 
 An incomplete spec is a question, not a gap to fill in with a reasonable assumption.
 

@@ -198,3 +198,82 @@ PY
 Fixing it means a second row shape — a run with no coverage and no fingerprint — and a
 page that can render both without the empty columns reading as zeroes. Worth doing; not
 worth guessing at the shape of.
+
+## 7. The clobber check sees the record, not the field
+
+Writeback skips a Lead when `LastModifiedById` is somebody other than the integration user
+and `LastModifiedDate` is newer than our own `LeadScorer_Scored_At__c`. That is the whole
+signal Salesforce offers without Field History Tracking: **the record changed and who
+changed it**, never which field.
+
+So a rep correcting a typo in an address marks the record as manually overridden, and a
+lead whose score has genuinely moved since then is never updated again:
+
+```
+python3 - <<'PY'
+import app
+from test_salesforce import already_written, INTEGRATION_USER, HUMAN_USER
+rec = already_written(1)
+rec['AnnualRevenue'] = 15_000_000                    # genuinely a different score now
+rec['LastModifiedById'] = HUMAN_USER                 # a rep fixed the address
+rec['LastModifiedDate'] = '2026-08-27T09:00:00.000+0000'
+row = app.score_row(app._api_map_lead(rec), app.APPLIED['cut'])
+plan = app._sf_row_plan(row, rec, INTEGRATION_USER)
+print(plan['action'], '|', plan['note'])
+print('stored', rec['LeadScorer_Score__c'], '-> computed', round(row['score'], 4))
+PY
+```
+
+```
+overridden | edited in Salesforce since this tool last scored it, so it is left alone
+stored 0.5473 -> computed 0.5434
+```
+
+Checking `match` before `overridden` (see `_sf_row_plan`) already removes the common case:
+a record a human touched whose computed values are unchanged reads as "already matches",
+not as an override. What is left is the case above, where a real re-score is due and an
+unrelated edit blocks it, and there is currently no way to clear the flag except editing
+the record as the integration user.
+
+The direction of the error is deliberate — a lead this tool declines to update is visible
+on the page and costs somebody a click, and a lead it overwrites is somebody's work gone
+with nothing left to notice. But it is a real staleness bug, not a clean trade.
+
+Fixing it means Field History Tracking on the six owned fields and a second query per
+batch, or storing a checksum of what this tool last wrote and comparing against that
+instead of against a timestamp. The second is cheaper and needs a ninth custom field,
+which is a schema decision rather than a code one.
+
+## 8. The model version records the model, not the cutoffs
+
+`LeadScorer_Model_Version__c` is a content hash of `model.joblib`, so it answers "were
+these two scores produced by the same model". It does not answer "were they tiered the
+same way". Tier boundaries live in `APPLIED` and a manager moves them in Manager ·
+Calibration, so two writes carrying the identical model version and the identical score
+can carry different tiers:
+
+```
+python3 - <<'PY'
+import app, scorer
+row = app.score_row({'lead_id': 'X-1', 'channel': 'google', 'icp_category': 'High Value',
+                     'company_annual_revenue': '$1,000,000 to $4,999,999',
+                     'utm_medium': 'brand', 'legacy_score': 70}, scorer.DEFAULT_CUTOFFS)
+for cuts in (scorer.DEFAULT_CUTOFFS, {'hot': 0.99, 'warm': 0.98, 'cool': 0.97}):
+    v = app._sf_verdict(app._retier(row, cuts))
+    print(v['LeadScorer_Model_Version__c'], v['LeadScorer_Score__c'], v['LeadScorer_Tier__c'])
+PY
+```
+
+```
+model-53dbe1a9f81e 0.2064 Cool
+model-53dbe1a9f81e 0.2064 Cold
+```
+
+That is correct behaviour — a moved cutoff re-tiers without re-scoring, which is an
+invariant this repo holds elsewhere on purpose — and it is still a thing that will confuse
+somebody reading two Lead records six months apart. The cutoffs in force are visible in
+Manager · Calibration and nowhere in the CRM.
+
+Writing them would mean a ninth field or folding them into the version string, and folding
+them in would make the version string stop meaning "which model", which is the one
+question it currently answers cleanly.
