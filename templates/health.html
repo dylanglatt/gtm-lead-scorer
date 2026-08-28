@@ -1,0 +1,92 @@
+{% extends 'base.html' %}{% block content %}{% set h=health %}
+  {# Pipeline health. One card per source, newest run first. The page has one job: make a
+     change between runs visible, because no single run can show one. Nothing here is a
+     tier, a score or an action — this is about the INPUTS, and it deliberately borrows
+     the amber the rest of the tool uses for a flag rather than inventing a colour. #}
+  <div class="card">
+    <div class="card-hd"><h2>Pipeline health</h2>
+      <span class="hd-note">one row per scoring run
+        {% if h.state=='ok' %}<span class="faintnote">· <span class="num">{{h.total}}</span>
+          in the newest <span class="num">{{h.window}}</span></span>{% endif %}</span></div>
+
+    {% if h.state=='off' %}
+      <div class="card-bd">
+        <p class="empty">No run history is being kept. Set
+          <span class="mono">{{h.env_var}}</span> to a writable path and restart, and every
+          scored run from then on is recorded here. Nothing else about the tool changes
+          either way — running without a store is a supported state, not a fault, so
+          scoring, ranking and refusing all behave exactly as they do with one.</p>
+      </div>
+
+    {% elif h.state=='unavailable' %}
+      <div class="flag" style="margin:var(--s2)">
+        <b>A store is configured and could not be read.</b>
+        <span class="mono">{{h.env_var}}</span> is set, but opening it failed — an
+        unmounted disk or a path this process cannot write to are the usual causes. Runs
+        are still being scored and ranked normally; they are not being recorded. This is
+        shown rather than rendered as an empty page on purpose: a broken store must not be
+        able to read as a quiet week.
+      </div>
+
+    {% elif not h.sources %}
+      <div class="card-bd">
+        <p class="empty">The store is working and nothing has been scored yet. Rank a file
+          from <a href="{{url_for('home')}}">Lead intake</a> and it appears here.</p>
+      </div>
+    {% endif %}
+  </div>
+
+  {% for s in h.sources %}
+    <div class="card">
+      <div class="card-hd">
+        <h2>{{s.label}}</h2>
+        <span class="hd-note">
+          {% if s.flagged %}<span class="flagtag">{{s.flagged}} flagged</span>{% endif %}
+          <span class="num">{{s.runs}}</span> run{{ '' if s.runs==1 else 's' }}{%
+            if s.shown < s.runs %}, newest <span class="num">{{s.shown}}</span> shown{% endif %}
+        </span>
+      </div>
+
+      {# The two facts somebody comes to this page for, before any table: what schema is
+           arriving now, and how much of it the model can read. #}
+      <div class="runsum">
+        Current schema <span class="mono">{{s.fingerprint}}</span> ·
+        latest coverage <b class="num">{{s.pct}}%</b>
+        {%- if s.low != s.high %} · <span class="num">{{s.low}}</span>–<span
+          class="num">{{s.high}}</span>% across the runs below{% endif %}
+      </div>
+
+      <div class="card-bd flush">
+        <table class="runs">
+          <thead><tr>
+            <th>Run <span class="th-note">UTC</span></th><th>Schema</th><th class="r">Coverage</th>
+            <th class="r">In</th><th class="r">Scored</th><th class="r">Failed</th>
+          </tr></thead>
+          <tbody>
+          {% for r in s.rows %}
+            <tr{% if r.flags %} class="flagged"{% endif %}>
+              <td class="mono">{{r.at}}</td>
+              <td class="mono">{{r.fingerprint}}</td>
+              <td class="r">
+                {# The bar is the point of the column: a slide across four runs is a shape
+                     before it is a number, and reading it as a shape is the whole reason
+                     this page exists rather than a log line. #}
+                <span class="covbar"><i style="width:{{r.pct}}%"></i></span>
+                <span class="num">{{r.pct}}%</span>
+              </td>
+              <td class="r num">{{r.rows_in}}</td>
+              <td class="r num">{{r.scored}}</td>
+              <td class="r num{% if r.failed %} warnnum{% endif %}">{{r.failed}}</td>
+            </tr>
+            {% if r.flags %}
+              <tr class="flagrow"><td colspan="6">
+                {% for f in r.flags %}<div>{{f}}</div>{% endfor %}
+              </td></tr>
+            {% endif %}
+          {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  {% endfor %}
+{% endblock %}

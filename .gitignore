@@ -17,3 +17,7 @@ data/*
 
 # Private interview prep. Never goes in the public repo.
 BUILD-PLAN.local.md
+.prompts.local/
+
+# A local run-history store, if RUN_HISTORY_DB points at one inside the checkout.
+*.db

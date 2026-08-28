@@ -32,6 +32,9 @@ function.
 | Another system's JSON | `POST /api/score` | `_api_map_lead` then `score_row` / `score_rows` |
 | A live Salesforce pull | `POST /rank/salesforce` | `_sf_query_leads` then the same `_rank_leads` |
 
+Each of the four names itself to run history as it goes past `_summarize`. `GET /health`
+reads that history back and is not an intake: loading it scores nothing and logs nothing.
+
 `scorer.score_lead` is the only place a lead is judged. There is no second scoring path
 and there must not be one: an earlier version had a `from_form` flag for a single feature,
 and the same lead scored 38% Warm typed and 3.4% Cold uploaded. Held by
@@ -43,6 +46,11 @@ and the same lead scored 38% Warm typed and 3.4% Cold uploaded. Held by
   from `FIELDS` and accepts any casing or punctuation of a column name. `CRM_ALIASES` adds
   Salesforce and HubSpot's own field names on top. Extending this per org is the intended
   use. Mapping an unfamiliar *value* through it is not.
+- **`_summarize`** (`app.py`) is where a scoring run becomes a fact about the pipeline.
+  Every intake that produces a summary passes through it, so it is also the single hook
+  for run history: it takes an `origin` (`upload` / `sample` / `api` / `salesforce`) and
+  writes one row. A new intake gets logged by existing, not by remembering to log.
+  `origin=None` records nothing, which is what off-request scoring and the tests get.
 - **`score_row` / `score_rows`** (`app.py`) is the batch entry. It owns two rules the
   single-lead form does not have: a row with no id never reaches the model, and anything
   the model throws is caught per row so one bad row cannot take a file down.
@@ -61,12 +69,14 @@ and the same lead scored 38% Warm typed and 3.4% Cold uploaded. Held by
   mess is a note on the row, and the row still ships.
 - `flags.py` classifies a problem as a missing field or a bad value.
 - `format.py` reshapes results for templates. Decides nothing.
+- `runs.py` is the run-history store: hash a header set, append a row, read rows back.
+  Decides nothing about what a change means — that lives in `app.py` beside `MATCH_NOTICE`.
 - `model.joblib` / `meta.json` are the fitted model and its metadata, built by
   `make_synthetic_data.py` then `train_and_save.py`.
 
 ## What must stay true
 
-Five test files. The ones below encode a decision rather than a behaviour, so a failure
+Six test files. The ones below encode a decision rather than a behaviour, so a failure
 here means the change is wrong, not that the test is stale.
 
 | Invariant | Held by |
@@ -81,6 +91,10 @@ here means the change is wrong, not that the test is stale.
 | A refused file still accounts for every row it read | `test_a_refused_file_still_accounts_for_every_row_it_read` |
 | A moved cutoff re-tiers without re-scoring | `test_a_moved_cutoff_retiers_without_rescoring` |
 | No template hardcodes a tier name or action | `test_no_template_hardcodes_a_tier_name_or_action` |
+| A reordered or recased header is the same schema | `test_the_fingerprint_is_stable_across_column_reorder_and_case` |
+| A renamed or dropped column is not | `test_the_fingerprint_moves_when_a_column_is_renamed_or_dropped` |
+| A failed history write leaves the scoring run intact | `test_a_failed_write_leaves_the_scoring_run_intact` |
+| No store configured ranks exactly as a store does | `test_no_store_configured_ranks_normally_and_health_says_so` |
 
 The golden export test is the tripwire. It pins the exported bytes for `demo_leads.csv`,
 so a change anywhere else cannot quietly move a score. If it fails and you believe the new
@@ -91,7 +105,19 @@ golden update into a feature commit.
 
 **Optional integrations degrade to absent, never to an error.** Salesforce is configured by
 three env vars. None set is a fully supported state: the button does not render
-(`sf_configured`) and nothing else changes. Any integration added later follows this.
+(`sf_configured`) and nothing else changes. Run history takes the same posture from one
+var, `RUN_HISTORY_DB`: unset means no store, no writes, and `/health` saying so plainly.
+Any integration added later follows this.
+
+**Bookkeeping is expendable; the run is not.** Nothing observational may fail a scoring
+run. `runs.record` swallows every exception it can produce and `_record_run` catches on
+top of it, because the contract is "the rep still gets their board", not "the store
+handles its own errors". Whatever gets watched next inherits this.
+
+**An absent store and a broken one are different answers.** `runs.recent()` returns `None`
+for either, and `/health` separates them: not configured is a supported way to run this
+app, unreadable is a fault. Collapsing the two would let an unmounted disk read as a quiet
+week, which is the exact silent-but-fine failure the page exists to remove.
 
 **Anything that calls an external system gets a rate limit.** Every route here is
 unauthenticated on purpose, but `/rank/salesforce` and `/salesforce/leads` place a real
@@ -109,6 +135,12 @@ the same commit that creates the limit.
 **`docs/spec-any-csv.md` is a design document and is deliberately not built.** Do not
 implement it as if it were a backlog.
 
+**Storage is one disk, and that is a decision, not a default.** Run history is SQLite on a
+Render persistent disk (`render.yaml`), which pins the service to one instance. That was
+already true — `--workers 1` says so for `_RESULTS`' sake — so the disk costs nothing that
+was not already spent. If history ever has to outlive a single instance it moves to a
+managed Postgres and the disk block goes away; it does not get scaled.
+
 **Pins are load-bearing.** `model.joblib` is a pickle, so `scikit-learn` is pinned exactly
 and `PYTHON_VERSION` is pinned alongside it. The gunicorn command appears in `Procfile`,
 `render.yaml` and the `Dockerfile`; if one changes the others change with it. `--workers 1`
@@ -122,10 +154,13 @@ moves out of process memory first.
 pip install -r requirements.txt && python3 app.py        # http://localhost:5000
 pip install -r requirements-dev.txt && pytest            # full suite, no credentials needed
 gunicorn app:app --bind 0.0.0.0:$PORT --workers 1 --threads 8 --timeout 120
+RUN_HISTORY_DB=./runs.db python3 app.py                  # ...with /health keeping history
 ```
 
 `pytest` runs clean on a fresh clone with no env vars set. `test_salesforce.py`
-monkeypatches the one function that touches the network.
+monkeypatches the one function that touches the network; `test_run_history.py` writes a
+real SQLite file to a temp path, because the thing most likely to be wrong there is the
+SQL and a stub would pass either way.
 
 ## Ask before you build
 

@@ -25,10 +25,32 @@ services:
     buildCommand: pip install -r requirements.txt
     startCommand: gunicorn app:app --bind 0.0.0.0:$PORT --workers 1 --threads 8 --timeout 120
     # The route exists for exactly this: a health check that never touches the model.
+    # NOT /health, which is the run-history page and reads a disk. A liveness probe that
+    # touched storage would take the site down for a reason the site can survive.
     healthCheckPath: /healthz
+    # Run history. Render's filesystem is ephemeral, so a SQLite file anywhere else is
+    # wiped on every deploy -- which would make the page most useful across months of runs
+    # the one page that cannot see past the last push. A disk is the whole fix.
+    #
+    # A disk pins the service to ONE instance, which is not a new constraint: --workers 1
+    # above already says this process is singular, for _RESULTS' sake. The same sentence
+    # applies here -- if run history ever needs to outlive a single instance, it moves to
+    # a managed Postgres and this block goes away, rather than the disk being scaled.
+    #
+    # 1GB is enormous for the job. A run is under 200 bytes and this writes one per
+    # upload; the smallest disk Render sells is already several human lifetimes of demo.
+    disk:
+      name: run-history
+      mountPath: /var/data
+      sizeGB: 1
     envVars:
       - key: PYTHON_VERSION
         value: 3.12.7
+      # Unset is a fully supported state -- no store, no writes, and /health says it has
+      # no data (see runs.py). It is set here because on THIS host there is a disk to put
+      # it on; a local checkout with nothing set runs and tests exactly the same.
+      - key: RUN_HISTORY_DB
+        value: /var/data/runs.db
       # sync: false -- Render will prompt for these in the dashboard instead of reading a
       # value out of this file, so a Salesforce Consumer Secret never sits in git. All
       # three unset (the default until someone fills them in) is a supported state: the

@@ -303,6 +303,20 @@ td.rank{color:var(--faint)}
 .pager .off{color:var(--faint);border-color:var(--line);cursor:not-allowed}
 .pager .pageno{color:var(--muted)}
 
+/* --- /health. Same table, same amber, one new shape: the coverage bar, which is there
+       because a slide across four runs reads as a shape before it reads as a number. --- */
+td.r,th.r{text-align:right}
+.runs td{vertical-align:middle}
+.runs tr.flagged td{background:var(--flag-bg)}
+.runs tr.flagrow td{background:var(--flag-bg);border-bottom:1px solid var(--flag-br);
+                    color:var(--flag-fg);font-size:12.5px;padding-top:0}
+.runs .warnnum{color:var(--flag-fg);font-weight:600}
+.covbar{display:inline-block;width:64px;height:6px;border-radius:3px;
+        background:var(--line-3);border:1px solid var(--line);
+        vertical-align:middle;margin-right:var(--s1);overflow:hidden}
+.covbar i{display:block;height:100%;background:var(--ink-2)}
+.runs tr.flagged .covbar i{background:var(--flag-fg)}
+
 /* Tier colour, applied to every shape that carries a tier: legend dot, pill, bar segment.
    Generated from the tier list the page is given, so a new tier needs one entry there
    plus its :root ramp. */
@@ -328,6 +342,10 @@ td.rank{color:var(--faint)}
         <span class="lg"><i class="dot {{t.key}}"></i><b>{{t.name}}</b> · {{t.action}}</span>
       {% endfor %}
     </div>
+    {# Pipeline health. Quiet, next to the other standing links rather than in the
+         legend, because it is not part of reading a board — it is the page you open
+         when you want to know whether the boards have been getting worse. #}
+    <a class="startover" href="{{url_for('health')}}">Health</a>
     <a class="startover" href="https://github.com/dylanglatt/gtm-lead-scorer"
        target="_blank" rel="noopener">GitHub ↗</a>
     {% if view=='calibrate' %}

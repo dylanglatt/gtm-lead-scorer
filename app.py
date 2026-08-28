@@ -29,6 +29,12 @@ THE THREE PATHS THROUGH THIS FILE
   Manager · Calibration                   GET /calibrate      -> calibrate()  ~line 1158
     the only place cutoffs change. Apply writes APPLIED; nothing is re-scored.
 
+  Pipeline health                         GET /health         -> health()
+    NOT an intake and not /healthz. Every path above writes one row per run through
+    _summarize (see _record_run); this reads them back per source and flags a run whose
+    schema fingerprint moved, or whose coverage crossed below MATCH_NOTICE, since the run
+    before it. The store is runs.py and is absent unless RUN_HISTORY_DB is set.
+
 WHERE THINGS LIVE
   FIELDS        ~63    every field: label, scorer name, URL param, combo-box options.
                       Also drives the CSV header map — a field hidden from the FORM must
@@ -53,7 +59,7 @@ import scorer
 # The parts that need no request and no app. Imported rather than defined here so this file
 # is the routing layer and little else; the names are re-exported below, because the tests
 # and the templates reach several of them through `app.`.
-import csv_io, flags, format as fmt
+import csv_io, flags, format as fmt, runs
 from csv_io import _norm_header, _decode, _dialect, _rows
 from flags import _KINDS, _flag_kind, _MISSING_FLAGS, BAD, MISSING, \
                   _flag_severity, _worst_severity, _row_flags
@@ -377,6 +383,7 @@ def _ctx(**kw):
     then the few values that must be computed AFTER the override (cut_pct tracks whichever
     cutoffs are in play; score_pct drives the hero number)."""
     base=dict(single=None,qv=None,cal=None,schema=None,summary=None,declined=None,
+              health=None,
               offer_sample=False,
               # Checked fresh per request (not cached at import) so setting the env vars
               # and restarting is all it takes for the Salesforce button to appear -- no
@@ -556,7 +563,48 @@ def match_band(coverage):
     if coverage>=MATCH_REFUSE: return 'notice'
     return 'refuse'
 
-def _summarize(res, report, n_in):
+# ---------------------------------------------------------------------------
+# RUN HISTORY. One row per scoring run, written from _summarize — the one function every
+# intake path already converges on, so a path added later is logged by existing rather
+# than by remembering to log. The store is runs.py; this is the seam between a scored
+# board and a row about it.
+#
+# ORIGIN, not source. `source` is already taken in this file: it is the Salesforce
+# provenance dict threaded through _rank_leads onto the board. The intake label needed a
+# name of its own, and it is what lands in the run's `source` column and shows on /health.
+#
+# origin=None records nothing, which is the right default rather than an oversight.
+# _summarize is also called by the test suite and by anything scoring off-request, and a
+# number produced outside a real intake has no business in a history of real intakes —
+# the same reasoning that keeps APPLIED out of off-request scoring.
+ORIGINS=('upload','sample','api','salesforce')
+
+# What /health calls each origin. The stored value stays the short machine word — it is a
+# key, and a key that reads like prose gets rewritten by the first person who dislikes the
+# prose. This is the display layer doing its one job, in the file that owns how things
+# look. An origin with no entry here shows under its stored name rather than vanishing.
+ORIGIN_LABELS={'upload':'CSV upload','sample':'Sample file',
+               'api':'JSON API','salesforce':'Salesforce'}
+
+def _record_run(summary, report, origin):
+    """A finished summary -> one row of run history. Best effort, always.
+
+    runs.record already swallows everything it can raise; this catches on top of it
+    because the contract is stronger than "the store handles its own errors". Nothing
+    between a summary and a stored row — a header that is not a list, a summary key that
+    moved — may cost a rep the board they uploaded a file to get. The bookkeeping is
+    allowed to fail. The run is not."""
+    if not origin: return
+    try:
+        runs.record(source=origin,
+                    fingerprint=runs.schema_fingerprint(report.get('header') or ()),
+                    coverage=summary['coverage'], band=summary['band'],
+                    rows_in=summary['rows_in'], scored=summary['scored'],
+                    failed=summary['failed'])
+    except Exception:
+        log.warning('run history entry skipped; the scoring run is unaffected', exc_info=True)
+
+def _summarize(res, report, n_in, origin=None):
     """N in / N scored / N flagged by type / confidence split — printed to the console and
     shown above the ranked list, so a messy run is legible without reading rows.
 
@@ -596,6 +644,7 @@ def _summarize(res, report, n_in):
        'usable_cells':usable_cells,'total_cells':total_cells,
        'unusable_by_field':dict(by_field.most_common())}
     print('[rank] '+json.dumps(s, ensure_ascii=False))
+    _record_run(s, report, origin)
     return s
 
 def _match_detail(summary):
@@ -660,13 +709,18 @@ def _decline(message, **extra):
     somebody stuck is half a refusal."""
     return dict(single={'error':message}, offer_sample=True, **extra)
 
-def _rank_bytes(raw, cuts):
+def _rank_bytes(raw, cuts, origin):
     """CSV bytes -> the payload results() renders. THE one path a ranked board is built
     on: the upload and the sample button both come through here, so neither can produce a
     board the other would not.
 
     Three outcomes, and which one is chosen is decided here rather than in the template:
-    a file we could not read at all, a file we read but will not rank, and a board."""
+    a file we could not read at all, a file we read but will not rank, and a board.
+
+    origin ('upload' or 'sample') is only a label for run history — see _record_run. It
+    reaches nothing that decides anything, which is why the two callers can differ on it
+    and still be unable to produce different boards. A file we could not read at all
+    returns above without a row: nothing was scored, so there is no run to describe."""
     try:
         leads,report=read_leads(raw)
     except ValueError as e:                       # file-level: the only loud failure
@@ -675,9 +729,9 @@ def _rank_bytes(raw, cuts):
         return _decline(
             f'That file has {len(leads):,} rows and this ranks up to {MAX_ROWS:,} at a '
             'time. Split it and rank the parts, or run the tool locally.')
-    return _rank_leads(leads, report, cuts)
+    return _rank_leads(leads, report, cuts, origin=origin)
 
-def _rank_leads(leads, report, cuts, source=None):
+def _rank_leads(leads, report, cuts, source=None, origin=None):
     """(lead_dict, why_notes) pairs + a report dict -> the payload results() renders. THE
     shared tail of every intake path that produces a ranked board -- extracted out of
     _rank_bytes so a non-CSV source (the Salesforce pull below) scores, ranks and declines
@@ -688,13 +742,17 @@ def _rank_leads(leads, report, cuts, source=None):
     source, when given, is opaque here -- just a dict (today: {'org','raw_url'} from the
     Salesforce pull) carried onto whichever payload shape gets returned below, ranked or
     declined, so results.html/score.html can show where a non-CSV board came from. None
-    for the CSV/sample paths, which have nothing to attribute and render no such note."""
+    for the CSV/sample paths, which have nothing to attribute and render no such note.
+
+    origin is the unrelated one-word run-history label ('upload' / 'sample' / 'salesforce')
+    and is passed straight to _summarize. Two names because they answer two questions:
+    source is shown to a rep looking at one board, origin is what /health groups by."""
     # THE contract: every input row produces an output row, carrying its reason if it
     # could not be scored. score_rows owns both rules; see it and scorer.score_leads.
     res=score_rows([lead for lead,_ in leads], cuts)
     for r,(_lead,why) in zip(res, leads): r['row_notes']=why
     res.sort(key=rank_key)                                       # ranked queue
-    summary=_summarize(res, report, len(leads))
+    summary=_summarize(res, report, len(leads), origin)
     band=summary['band']
 
     # The file was read and scored, and the scores are not worth showing. Every row has a
@@ -737,7 +795,7 @@ def rank():
     f=request.files.get('csv')
     if not (f and f.filename):
         return redirect(url_for('home'), code=303)
-    return _stash_and_redirect(_rank_bytes(f.read(), _cuts(request.form)))
+    return _stash_and_redirect(_rank_bytes(f.read(), _cuts(request.form), 'upload'))
 
 @app.route('/rank/sample', methods=['POST'])
 def rank_sample():
@@ -750,7 +808,7 @@ def rank_sample():
     it goes through _rank_bytes, so this and uploading the same file cannot diverge."""
     with open(os.path.join(os.path.dirname(os.path.abspath(__file__)),
                            SAMPLE_FILE), 'rb') as fh:
-        return _stash_and_redirect(_rank_bytes(fh.read(), _cuts(request.form)))
+        return _stash_and_redirect(_rank_bytes(fh.read(), _cuts(request.form), 'sample'))
 
 def _stash_and_redirect(payload):
     """Hold the payload under a one-shot token and send the browser to the plain GET.
@@ -968,8 +1026,33 @@ def api_score():
             results.append({'error':'each lead must be a JSON object','lead_id':None})
         else:
             results.append(score_row(_api_map_lead(raw), APPLIED['cut']))
+    # Summarized for run history only — the response is built from `results` above and is
+    # byte for byte what it was before this line existed. This path is the one intake that
+    # does NOT act on the band: a caller asking for one lead gets its score back whatever
+    # the coverage, because a workflow step wants an answer per record and has no page to
+    # be declined on. That asymmetry is real, and /health now shows it rather than hiding
+    # it — an api row sitting at a refusing band is the API being asked to score leads
+    # nobody filled in, which is worth somebody seeing.
+    _summarize(results, _api_report(leads_in), len(leads_in), 'api')
     body={'count':len(results),'results':results} if many else results[0]
     return Response(json.dumps(body), mimetype='application/json')
+
+def _api_report(leads_in):
+    """The report shape _summarize expects, built from a JSON batch's KEYS.
+
+    The union across the batch, not one lead's keys: a caller sending 500 records is
+    sending one schema, and a record that happens to omit a field is a blank cell, not a
+    different export. The same reading _rank_salesforce takes of SF_LEAD_FIELDS.
+
+    time_zone counts as present whenever state is, because _api_map_lead derives it — the
+    identical adjustment SF_MAPPED_FIELDS makes, for the identical reason."""
+    keys={_norm_header(k) for raw in leads_in if isinstance(raw,dict) for k in raw}
+    mapped={API_HEADER_MAP[k] for k in keys if k in API_HEADER_MAP}
+    if 'state' in mapped: mapped.add('time_zone')
+    return {'blank':0,
+            'missing_cols':sorted(FIELD_NAMES-mapped),
+            'ignored_cols':sorted(k for k in keys if k not in API_HEADER_MAP),
+            'header':sorted(keys)}
 
 def _api_map_lead(raw):
     """A raw JSON object -> scorer field names, via API_HEADER_MAP (HEADER_MAP plus real
@@ -1148,16 +1231,121 @@ def _rank_salesforce(cuts):
     report={'blank':0,
             'missing_cols':sorted(FIELD_NAMES-SF_MAPPED_FIELDS),
             'ignored_cols':[],
-            'header':len(SF_LEAD_FIELDS.split(','))}
+            # The SOQL SELECT list IS this pull's header, so the run-history fingerprint
+            # of a Salesforce board moves when SF_LEAD_FIELDS moves and at no other time.
+            # That is the honest reading: widening the query is a schema change to
+            # everything downstream of it, exactly as a new CSV column would be.
+            'header':SF_LEAD_FIELDS.split(',')}
     source={'org':instance_url.replace('https://','').replace('http://',''),
             'raw_url':url_for('salesforce_leads')}
-    return _rank_leads(leads, report, cuts, source=source)
+    return _rank_leads(leads, report, cuts, source=source, origin='salesforce')
 
 @app.route('/rank/salesforce', methods=['POST'])
 def rank_salesforce():
     """Pull and rank real Leads from the connected Salesforce org -- same Post/Redirect/Get
     shape as /rank and /rank/sample, so this and a CSV upload land on the identical board."""
     return _stash_and_redirect(_rank_salesforce(_cuts(request.form)))
+
+# ---------------------------------------------------------------------------
+# /health — the run history, read back. Two routes with nearly the same name and no
+# relationship: /healthz below is a liveness probe for the host and touches nothing,
+# /health is a page about the DATA that has come through this tool. Neither is a
+# substitute for the other, and the process being up is exactly the state in which the
+# failure this page exists to catch is invisible.
+#
+# WHAT IT IS FOR. One run cannot tell you its file was worse than last month's. The tool
+# refuses a file that arrives unreadable; it has nothing to say about a file that arrives
+# slightly worse every month until it is unreadable, because each of those runs looked
+# fine. This page is the difference between "here is a screenshot of the notice" and
+# "here is the run where the column was renamed".
+HEALTH_RUNS_SHOWN=12   # rows in the table, per source. The counts above the table are over
+                       # runs.RECENT_LIMIT, which is the window this page reads at all —
+                       # said out loud on the page rather than implied, because a count
+                       # that quietly stops at 400 is the kind of number this repo refuses
+                       # to print everywhere else.
+
+def _run_flags(cur, prev):
+    """Why one run is worth a second look, judged against the previous run OF THE SAME
+    SOURCE. [] for the first run of a source — there is nothing to have changed from.
+
+    Both conditions are about CHANGE, not level, and that is the design. A source that has
+    always sat at 60% coverage is a limitation somebody already knows about, and flagging
+    it every single run would teach a reader to skim past the flags — which is how this
+    page would come to fail in exactly the way the boards it watches can. A source that
+    read 98% last week and 60% today is the thing nobody would otherwise notice.
+
+    The coverage rule is a DOWNWARD CROSSING of MATCH_NOTICE, not a drop: 0.99 -> 0.85 is
+    still a file whose order is worth trusting, and the tool says nothing about it on the
+    board either. The run where the tool started calling its own output rough is the run
+    worth a sentence."""
+    if prev is None: return []
+    out=[]
+    if cur['fingerprint']!=prev['fingerprint']:
+        out.append('Schema changed. The column set is not the one the previous run read — '
+                   'a column was renamed, added or dropped.')
+    if prev['coverage']>=MATCH_NOTICE>cur['coverage']:
+        out.append(f'Coverage crossed below {int(round(MATCH_NOTICE*100))}%. This run\'s '
+                   'order is rough; the run before it was not.')
+    return out
+
+def _health_run(r, prev):
+    """One stored run, shaped for the table. Decides nothing except what _run_flags does."""
+    return {'at':str(r['at'])[:16].replace('T',' '),   # 2026-08-27 21:14, UTC, seconds cut
+            'source':r['source'],
+            'fingerprint':r['fingerprint'] or '—',
+            'pct':int(round(r['coverage']*100)),
+            'band':r['band'],
+            'rows_in':r['rows_in'],'scored':r['scored'],'failed':r['failed'],
+            'flags':_run_flags(r, prev)}
+
+def _health_source(name, group):
+    """One source's runs, newest first. group is every run of this source that was read,
+    which is what the counts are over; the table shows the newest HEALTH_RUNS_SHOWN.
+
+    Each run is compared with the one genuinely before it, taken from `group` rather than
+    from the truncated list — so the oldest row on screen is still judged against real
+    history instead of reading as a first run every time the page is trimmed."""
+    rows=[_health_run(r, group[i+1] if i+1<len(group) else None)
+          for i,r in enumerate(group[:HEALTH_RUNS_SHOWN])]
+    pcts=[r['pct'] for r in rows]
+    return {'source':name,'label':ORIGIN_LABELS.get(name,name),
+            'runs':len(group),'shown':len(rows),
+            # The CURRENT schema: whatever the newest run read. This is the string somebody
+            # compares by eye against the one they wrote down last month.
+            'fingerprint':rows[0]['fingerprint'],
+            'pct':rows[0]['pct'],'band':rows[0]['band'],
+            'low':min(pcts),'high':max(pcts),
+            'flagged':sum(1 for r in rows if r['flags']),
+            'rows':rows}
+
+def _health():
+    """Run history grouped by source, or an honest account of why there is none.
+
+    Three states, kept apart on purpose. 'off' — nothing configured, which is a supported
+    way to run this app and not a fault. 'unavailable' — configured and the store could
+    not be read, which IS a fault and must not read as a quiet week. 'ok' — data, possibly
+    none of it yet.
+
+    Every count here is over the newest runs.RECENT_LIMIT runs, which is the window this
+    reads. The page says so; nothing here claims to be a total."""
+    rows=runs.recent()
+    if rows is None:
+        return {'state':'unavailable' if runs.configured() else 'off',
+                'env_var':runs.ENV_VAR,'sources':[]}
+    by=collections.defaultdict(list)
+    for r in rows: by[r['source']].append(r)          # recent() returns newest first
+    # ORIGINS order first so the page reads the same every time, then anything else the
+    # store holds — a source written by an older version of this app is still shown rather
+    # than silently dropped, because a history that hides rows is not a history.
+    order=list(ORIGINS)+sorted(set(by)-set(ORIGINS))
+    return {'state':'ok','env_var':runs.ENV_VAR,'total':len(rows),'window':runs.RECENT_LIMIT,
+            'sources':[_health_source(n, by[n]) for n in order if by.get(n)]}
+
+@app.route('/health')
+def health():
+    """The run history. Read-only, and it writes nothing itself — loading this page is not
+    a run and never appears in it."""
+    return render_template('health.html', **_ctx(view='health', health=_health()))
 
 @app.route('/healthz')
 def healthz():

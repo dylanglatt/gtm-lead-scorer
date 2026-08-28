@@ -121,5 +121,12 @@ def read_leads(raw, header_map, field_names):
         d['lead_id']=lid
         leads.append((d,why))
     if not leads: raise ValueError('that file has a header but no rows')
+    # 'header' is the NORMALIZED header, in file order: what this module made of row 1
+    # before any of it was mapped to a field name. It is here for run history, which
+    # fingerprints the header SET so a reordered or recased export reads as the same
+    # schema and a renamed or dropped column does not -- see runs.schema_fingerprint.
+    # Normalized rather than raw so the one definition of "same column name" lives in
+    # _norm_header, and in file order rather than sorted because ordering the set is the
+    # fingerprint's job, not this module's.
     return leads, {'blank':blank,'missing_cols':missing,'ignored_cols':ignored,
-                   'header':len(header)}
+                   'header':[_norm_header(h) for h in header]}

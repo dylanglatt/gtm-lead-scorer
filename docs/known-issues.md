@@ -1,6 +1,7 @@
 # Known issues
 
-Things that are wrong, or not yet right, in the file-level match check and around it.
+Things that are wrong, or not yet right, in the file-level match check, in the run
+history that watches it, and around both.
 Written down rather than fixed because each needs a decision or real data, and a limit
 stated plainly is worth more than a surprise.
 
@@ -129,3 +130,71 @@ with room to spare. A wider export would not: the same 99,000 rows with a dozen 
 columns hits the size limit long before the row cap, and the two bounds have never been
 set against each other. Whichever one a real upload meets first is currently an accident
 of how many columns the CRM exports.
+
+## 5. One upload source is really every uploader at once
+
+Run history groups by intake path, and `upload` is one path however many different people
+and systems use it. `/health` compares each run with the previous run of the same source,
+so two teams alternately uploading two legitimately different exports produce a schema
+change flag on every single run — each one correct in isolation, and the sequence
+meaningless.
+
+Two files, each perfectly good, uploaded in turn:
+
+```
+python3 - <<'PY'
+import io, os, tempfile
+os.environ['RUN_HISTORY_DB'] = os.path.join(tempfile.mkdtemp(), 'runs.db')
+import app
+from test_run_history import csv_bytes, COLUMNS
+c = app.app.test_client()
+for cols in [COLUMNS, COLUMNS + ['created_at'], COLUMNS, COLUMNS + ['created_at']]:
+    c.post('/rank', data={'csv': (io.BytesIO(csv_bytes(cols)), 'l.csv')},
+           content_type='multipart/form-data')
+for r in app._health()['sources'][0]['rows']:
+    print(r['fingerprint'], r['pct'], r['flags'])
+PY
+```
+
+Every run but the oldest is flagged, and nothing is wrong with any of them.
+
+The fix is to key history on something narrower than the route — the fingerprint itself is
+the obvious candidate, so a source becomes (path, schema) and each schema keeps its own
+history. That is a real design decision about what a "source" is and it wants a second
+opinion, not a quick patch: it also decides what happens the first time a legitimate
+schema change arrives, which under that model starts a new history rather than flagging
+the old one.
+
+Until then this is accurate for the case it was built for — one team, one export, watched
+over months — and noisy for the case it was not.
+
+## 6. A run is recorded only when something scored
+
+`_summarize` is the hook, so a file that never reached the model leaves no trace: an
+unreadable CSV, an oversized upload, a Salesforce pull that failed to authenticate. Those
+are refusals rather than runs, and none of them says anything about coverage or schema,
+which is the argument for leaving them out.
+
+It is also the argument against. A source whose exports have started arriving corrupt
+shows up on `/health` as silence — the same silence as nobody uploading anything — and
+silence is the failure mode this whole page exists to remove.
+
+```
+python3 - <<'PY'
+import io, os, tempfile
+os.environ['RUN_HISTORY_DB'] = os.path.join(tempfile.mkdtemp(), 'runs.db')
+import app
+c = app.app.test_client()
+c.post('/rank', data={'csv': (io.BytesIO(b'a,b\n1,2\n'), 'junk.csv')},
+       content_type='multipart/form-data')
+print(app._health()['sources'])
+PY
+```
+
+```
+[]
+```
+
+Fixing it means a second row shape — a run with no coverage and no fingerprint — and a
+page that can render both without the empty columns reading as zeroes. Worth doing; not
+worth guessing at the shape of.
