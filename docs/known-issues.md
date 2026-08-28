@@ -244,6 +244,19 @@ batch, or storing a checksum of what this tool last wrote and comparing against 
 instead of against a timestamp. The second is cheaper and needs a ninth custom field,
 which is a schema decision rather than a code one.
 
+**And in this demo org the check cannot be exercised at all.** The External Client App runs
+as a real person's user rather than a dedicated integration user, so `LastModifiedById` is
+the same Id whether the tool wrote the record or somebody edited it by hand in the
+Salesforce UI. Every edit reads as this tool's own, `_sf_human_edited` returns False, and
+nothing is ever reported as overridden however much clicking you do.
+
+The logic is covered by tests — `test_a_manually_overridden_record_is_skipped_and_reported`
+and `test_a_record_this_tool_has_never_written_is_not_treated_as_overridden` run both users
+against it — so what is untested is the wiring, not the rule. A real deployment gives the
+app its own integration user, which is what the check assumes and what makes the two Ids
+different. Until this org has one, treat a live demo of writeback as showing the write and
+not the refusal.
+
 ## 8. The model version records the model, not the cutoffs
 
 `LeadScorer_Model_Version__c` is a content hash of `model.joblib`, so it answers "were

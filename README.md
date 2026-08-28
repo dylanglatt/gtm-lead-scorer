@@ -212,6 +212,27 @@ org, on every click.
   window caps both routes (they share one budget) at `SF_MAX_CALLS_PER_HOUR` pulls, so a
   page that gets shared around can't quietly burn through a Developer Edition org's daily API
   limit.
+- **The write route is unauthenticated too, and that needs saying out loud** — the argument
+  above covers reads. `POST /results/<token>/writeback` modifies records in a real CRM, and
+  anybody who can reach this page can press that button. What bounds it here is the demo, not
+  the code: the org is a Developer Edition sandbox holding eight seeded mock Leads, the six
+  fields writeback touches are fields this tool invented and nothing else reads, the write is
+  idempotent so pressing it repeatedly changes nothing after the first time, and every batch
+  spends from the same hourly budget as the pull. The worst outcome available is that some
+  mock leads get the scores they were going to get anyway.
+
+  None of that is a security control, and none of it survives contact with a real org. A
+  deployment writing to records somebody works would gate this on an authenticated session
+  and a role — RevOps, the same audience Manager · Calibration is written for — scope the
+  integration user's field-level security to exactly `SF_WRITE_FIELDS` so a bug cannot reach
+  a field it does not own, and log who confirmed each write alongside what it changed. The
+  first of those is a login this demo deliberately does not have; the second is already how
+  the org is configured and is what `scripts/check_salesforce_schema.py` checks; the third
+  does not exist yet.
+
+  It is documented rather than built because adding a login to a public demo makes it a
+  worse demo and a no better argument, and pretending the question doesn't apply would be
+  worse than both.
 - **Checking an org before you point this at it** — `scripts/check_salesforce_schema.py`
   describes Lead **as the integration user** and reports every field writeback needs: present,
   right type, right scale, right picklist values, and actually updateable. `updateable` there
